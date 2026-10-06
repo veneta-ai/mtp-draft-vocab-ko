@@ -1,0 +1,18 @@
+mtp-draft-vocab-ko
+Copyright 2026 VENETA Inc.
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+This project builds on prior work it does not own:
+
+- FR-Spec: Frequency-Ranked Speculative Sampling (Zhao et al., ACL 2025) — the idea of restricting a drafter's output
+  projection to a frequency-ranked vocabulary subset while the target verifies over the full vocabulary.
+  https://aclanthology.org/2025.acl-long.198.pdf
+- MiaAI-Lab's DGX Spark kits for Qwen3.8-Flash-Next — the vLLM MTP draft-vocabulary overlay (`MTP_DRAFT_VOCAB`),
+  the 47k en+code floor, the byte-fallback pinning and the language-extension method this repository follows.
+  https://github.com/MiaAI-Lab/Qwen3.8-Flash-Next-Single-DGX-Spark
+- Korean Wikipedia — the frequency source for the Korean vocabularies. Text © Wikipedia contributors,
+  CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). The vocabulary files contain token ids ranked by
+  frequency, not Wikipedia text; the attribution is carried in every file header regardless.
+
+No customer or private corpus is used in any published file.
