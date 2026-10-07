@@ -4,7 +4,7 @@ Korean draft vocabularies for MTP speculative decoding — one file per tokenize
 measured before and after on the same machine, so a model that answers in Korean gets the speed-up its English users
 already get.
 
-**Status: in preparation (2026-10-06).** Files and numbers land here first; nothing is claimed before it is measured.
+**Status: first result in (2026-10-07).** Qwen3.8 (`nvidia/Qwen3.8-Flash-Next-NVFP4`): decode 16.9 → 26.1 tok/s (+54%), draft acceptance 1.33 → 2.16 accepted/draft, zero replacement characters, zero Korean-script drift, veneta-bench's 12 memory-ability cases unaffected (12/12). Conditions and raw run files in `results/README.md`. Other families below are not yet measured; nothing is claimed before it is.
 
 ## Why
 
@@ -56,7 +56,7 @@ No customer or private corpus is used in any published file.
 MTP 추측 디코딩용 한국어 드래프트 어휘사전입니다. 토크나이저 가족마다 파일 하나를 한국어 위키백과로 만들고, 같은
 장비에서 적용 전후를 재서 올립니다. 한국어로 답하는 모델이 영어 사용자가 이미 받는 속도 이득을 받게 하는 것이 목적입니다.
 
-**상태: 준비 중 (2026-10-06).** 파일과 숫자가 먼저 올라오고, 재기 전에는 아무것도 주장하지 않습니다.
+**상태: 첫 결과 (2026-10-07).** Qwen3.8(nvidia/Qwen3.8-Flash-Next-NVFP4): 디코딩 16.9 → 26.1 tok/s(+54%), 드래프트 수락률 1.33 → 2.16, 복제 문자 0개, 한국어 스크립트 오염 0개, veneta-bench 12개 기억 능력 문항 영향 없음(12/12). 조건과 원시 실행 파일은 results/README.md에 있습니다. 아래 다른 가족은 아직 측정 전이며, 재기 전에는 아무것도 주장하지 않습니다.
 
 ## 왜
 
