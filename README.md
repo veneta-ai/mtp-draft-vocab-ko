@@ -53,17 +53,30 @@ not yet verified — MiaAI-Lab's overlay was built against Qwen3.8's `mtp.py`, a
 each other family's own vLLM code is an open check, not an assumption we are publishing as fact. No file for those
 families exists here yet; a claim awaits its own measurement, same as every number above.
 
-**A model that pairs a full-size target with a separate, smaller drafter model (e.g. Gemma 4 with an assistant
-drafter, or Llama 3.3 70B with EAGLE-3) cannot use this method at all today.** The thing to restrict there is the
-separate drafter's own vocabulary head, not an MTP head inside the target, and no generic vLLM patch for that exists
-yet — this is blocked on new engine code, not on building another file. (This is also VENETA's own telecom stack's
-architecture, which is why we are tracking it, not because it is close.)
+**A model that pairs a full-size target with a separate, smaller EAGLE-style drafter model (e.g. Llama 3.3 70B with
+EAGLE-3) cannot use this method at all today.** The thing to restrict there is the separate drafter's own vocabulary
+head, not an MTP head inside the target, and no generic vLLM patch for that exists yet — this is blocked on new
+engine code, not on building another file. We read vLLM's own speculative-decoding code to design one (2026-10-07):
+the hook point is safe even when the drafter shares `lm_head` weights with the target — confirmed by tracing
+`RejectionSampler`, not assumed — because the target's verification call computes its own logits separately. Still in
+progress; measured on a real drafter stack before it is called done.
+
+**Gemma 4 with an assistant drafter turned out not to be the EAGLE case above — correction, 2026-10-07.** We assumed
+it needed the same generic patch; trying the patch against it showed otherwise. vLLM gives Gemma 4 its own dedicated
+code path (`Gemma4Proposer`), and Gemma 4's `compute_logits()` already routes through a `masked_embedding` layer —
+the checkpoint carries its *own* vocabulary-restriction mechanism (a centroid projection and a `token_ordering`
+buffer), baked in at training time, not a runtime file the way an MTP head's draft vocab is. A generic EAGLE patch
+was never going to touch it. Whether that built-in mechanism already covers Korean adequately, or has the same
+English-bias gap this whole repository exists to fix, and whether it can be swapped at all, is a separate, open
+question — not yet answered, not yet being called close. (This is VENETA's own telecom stack's architecture, which is
+why we are tracking it specifically rather than treating the EAGLE case as covering it.)
 
 | family | architecture | status |
 | --- | --- | --- |
 | Qwen3.8 (Qwen3.8-Flash-Next) | built-in MTP head | **measured, public** |
 | GLM 5.3 Flash · DeepSeek V4.1 Flash · EXAONE 4.x · other Qwen3.8/Qwen3-Next checkpoints | built-in MTP head | expected to work, unverified — no file yet |
-| Gemma 4 + assistant drafter · Llama 3.3 70B + EAGLE-3 | separate drafter model | blocked — needs a vLLM engine patch that does not exist yet |
+| Llama 3.3 70B + EAGLE-3 (and other EAGLE-style stacks) | separate drafter model | in progress — a vLLM patch is designed and safety-verified by reading the code, not yet measured on a real run |
+| Gemma 4 + assistant drafter | its own checkpoint-baked restriction (centroid projection, not FR-Spec-style) | open question, not a file-swap or a generic-patch target — under investigation |
 
 ## Licence and credit
 
@@ -100,13 +113,16 @@ MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # 비우면 기�
 
 **자체 MTP 헤드가 있는 모델은 자기 안에서 추가 토큰을 제안합니다.** 이 드래프트 헤드의 출력 투영을 어휘 부분집합으로 제한할 수 있고, 이 파일이 하는 일과 MiaAI-Lab의 오버레이가 다른 일곱 언어에서 이미 하는 일이 바로 그것입니다. Qwen3.8-Flash-Next는 측정을 마치고 공개되어 있습니다. GLM 5.3 Flash, DeepSeek V4.1 Flash, EXAONE 4.x와 다른 Qwen3.8/Qwen3-Next 체크포인트도 MTP 헤드가 있어 같은 종류의 파일을 받을 것으로 예상하지만, 아직 확인된 사실은 아닙니다. MiaAI-Lab의 오버레이는 Qwen3.8의 mtp.py를 대상으로 만들어졌고, 다른 가족의 vLLM 코드에도 같은 방식으로 붙는지는 아직 열린 확인 과제이며 사실로 공개하는 가정이 아닙니다. 이 가족들의 파일은 아직 여기에 없고, 위의 모든 숫자와 마찬가지로 주장에는 자신의 측정이 따라야 합니다.
 
-**본 모델과 별도의 더 작은 드래프터 모델을 함께 쓰는 구조(예: 어시스턴트 드래프터를 쓰는 Gemma 4, 또는 EAGLE-3을 쓰는 Llama 3.3 70B)는 지금은 이 방법을 전혀 쓸 수 없습니다.** 거기서 제한해야 할 대상은 본 모델 안의 MTP 헤드가 아니라 별도 드래프터 자신의 어휘 헤드이고, 그걸 위한 범용 vLLM 패치가 아직 없습니다. 이건 파일을 하나 더 만드는 문제가 아니라 새로운 엔진 코드가 필요한 문제입니다. (이 구조는 veneta 자신의 통신 스택 구조이기도 해서 추적하고 있는 것이고, 가까워서가 아닙니다.)
+**본 모델과 별도의 더 작은 EAGLE 방식 드래프터 모델을 함께 쓰는 구조(예: EAGLE-3을 쓰는 Llama 3.3 70B)는 지금은 이 방법을 전혀 쓸 수 없습니다.** 거기서 제한해야 할 대상은 본 모델 안의 MTP 헤드가 아니라 별도 드래프터 자신의 어휘 헤드이고, 그걸 위한 범용 vLLM 패치가 아직 없습니다. 이건 파일을 하나 더 만드는 문제가 아니라 새로운 엔진 코드가 필요한 문제입니다. vLLM 자체의 추측 디코딩 코드를 직접 읽고 설계했고(2026-10-07), 드래프터가 타깃과 lm_head 가중치를 공유해도 안전하다는 것도 가정이 아니라 RejectionSampler 코드를 추적해 확인했습니다 — 타깃의 검증 호출은 자기 로짓을 별도로 계산하기 때문입니다. 다만 아직 진행 중이고, 실제 드래프터 스택으로 측정하기 전에는 끝났다고 하지 않습니다.
+
+**어시스턴트 드래프터를 쓰는 Gemma 4는 위 EAGLE 경우와 다른 것으로 드러났습니다 — 2026-10-07 정정.** 같은 범용 패치가 통할 거라 가정했는데, 실제로 걸어 보니 아니었습니다. vLLM은 Gemma 4에 전용 코드 경로(Gemma4Proposer)를 따로 두고 있고, Gemma 4의 compute_logits()는 이미 masked_embedding이라는 레이어를 거칩니다 — 체크포인트 자체가 자기만의 어휘 제한 메커니즘(centroid projection과 token_ordering 버퍼)을 학습 때부터 내장하고 있다는 뜻입니다. MTP 헤드의 드래프트 어휘처럼 런타임에 파일로 바꿀 수 있는 게 아닙니다. 범용 EAGLE 패치가 애초에 건드릴 수 있는 대상이 아니었던 겁니다. 이 내장 메커니즘이 한국어를 이미 잘 다루는지, 아니면 이 저장소 전체가 고치려는 바로 그 영어 편향 문제를 똑같이 안고 있는지, 그리고 애초에 바꿀 수 있는 것인지는 완전히 별도의, 아직 답하지 않은 질문입니다 — 끝났다고 하지 않습니다. (이 구조는 veneta 자신의 통신 스택 구조라서 EAGLE 경우로 뭉뚱그리지 않고 따로 추적하고 있습니다.)
 
 | 가족 | 구조 | 상태 |
 | --- | --- | --- |
 | Qwen3.8 (Qwen3.8-Flash-Next) | 자체 MTP 헤드 | **측정 완료, 공개됨** |
 | GLM 5.3 Flash · DeepSeek V4.1 Flash · EXAONE 4.x · 다른 Qwen3.8/Qwen3-Next 체크포인트 | 자체 MTP 헤드 | 될 것으로 예상, 미확인 — 파일 아직 없음 |
-| Gemma 4 + 어시스턴트 드래프터 · Llama 3.3 70B + EAGLE-3 | 별도 드래프터 모델 | 막힘 — 아직 없는 vLLM 엔진 패치가 필요 |
+| Llama 3.3 70B + EAGLE-3(그 외 EAGLE 방식 스택) | 별도 드래프터 모델 | 진행 중 — vLLM 패치를 설계하고 코드로 안전성까지 확인, 실측은 아직 |
+| Gemma 4 + 어시스턴트 드래프터 | 체크포인트에 내장된 자체 제한 방식(FR-Spec식이 아닌 centroid projection) | 파일 교체도 범용 패치 대상도 아닌 별도 질문 — 조사 중 |
 
 ## 라이선스와 크레딧
 
