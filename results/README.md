@@ -22,12 +22,17 @@ greedy outputs on the 20 prompts.
 meaningful on this engine: at temp 0, repeat token counts on the same prompt varied slightly run-to-run even within
 one arm (e.g. ko-gen-01: 143/132/125 tokens across 3 repeats, shipped-vocab arm) — continuous batching changes the
 floating-point reduction order per batch, a known vLLM determinism caveat (the kit ships `patch_determinism.py` for
-part of this, not all of it). The quality gate actually run: zero replacement characters across all 120 generations
-in both arms (`measure.py`'s own counter), plus a dedicated Korean-script fidelity check (`bench/audit-korean.py`,
-4 short prompts after two long-form attempts tripped this host's memory watchdog at 16k context — see the note in
-`runs/`) — zero replacement chars, zero uncomposed jamo, zero stray Han/Kana characters, all Hangul. The
-veneta-bench 12-case check (same backbone, same loop, vocab swapped) is tracked separately; see the run file it
-produced if present.
+part of this, not all of it). What was run instead:
+
+- Zero replacement characters across all 120 generations in both arms (`measure.py`'s own counter).
+- A dedicated Korean-script fidelity check against the ko 65k arm: `scripts/audit-korean.py` in this repo (a trimmed,
+  self-contained copy of the MiaAI-Lab kit's `bench/audit-korean.py`), 4 short prompts at `max_tokens=200` after the
+  full 8-prompt/5-turn battery tripped this host's memory watchdog twice — see
+  `results/runs/2026-10-07-watchdog-note.md` for both incidents. Result: zero replacement chars, zero uncomposed
+  jamo, zero stray Han/Kana characters, all Hangul.
+- **veneta-bench's 12-case quality gate did not complete.** 4 of 12 cases ran clean against the ko 65k arm
+  (`telemem:run` in the worldmodel-core checkout) before the second watchdog stop killed the server mid-run; the
+  remaining 8 did not run. This is not yet satisfied — see the watchdog note for the exact point it stopped.
 
 **Table format.**
 
