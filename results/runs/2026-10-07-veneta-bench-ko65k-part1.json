@@ -1,0 +1,709 @@
+{
+  "at": "2026-10-07T03:13:27.286Z",
+  "model": "qwen3.8-flash-next",
+  "withMemory": true,
+  "recall": "dense",
+  "set": "core",
+  "records": [
+    {
+      "caseId": "mem-decision-backhaul",
+      "kind": "fault",
+      "question": "We have seen this backhaul fault before. What did we do last time and did the gate hold?",
+      "answer": "**Last time (inc-20260912-backhaul-degradation, recorded 2026‑09‑30T03:07Z): the same A2 ring transport fault was fixed by \"Reroute backhaul\" via Transport NMS — low risk, reversible — and the gate passed.**\n\nGate verdict on that occasion, read at the 120‑minute mark:\n- Availability 99.6% vs SLA ≥ 99.5% — pass\n- Throughput 88.4 Mbps vs ≥ 85 — pass\n- Drop rate 0.9% vs ≤ 1% — pass\n\nOne honesty note on \"did it hold\": my record holds the **simulated** gate verdict at the time of approval, not a post‑application re‑read of the live network. Treat it as \"the gate cleared on simulation\", not as monitored evidence of recovery after the click.\n\nToday's incident (inc‑20261007‑backhaul‑degradation, 15 cells, 5 major / 15 minor / 1 warning, top cause same A2 ring fault at 0.94 confidence) is worse than September's starting point: throughput is 47.6 Mbps and drop rate 2.43%.\n\n**Simulated now:** reroute‑backhaul still clears every gate on the pessimistic edge at 120 min — availability 99.8, throughput 93.8, drop 0.56% — but risk has risen from low to **medium**, and the protection path shares ring capacity, so neighbouring sites' throughput needs watching.\n\nRecommendation sits squarely with your past record. Approval stays yours on the Remediation Simulator.",
+      "toolCalls": [
+        {
+          "name": "listActiveAlarms",
+          "args": {},
+          "result": {
+            "openIncidents": 1,
+            "incidents": [
+              {
+                "id": "inc-20261007-backhaul-degradation",
+                "title": "Backhaul degradation behind A2",
+                "status": "triaged",
+                "openedAt": "2026-10-07T03:07:40.358Z",
+                "site": null,
+                "cells": 15,
+                "alarms": 21,
+                "severity": {
+                  "critical": 0,
+                  "major": 5,
+                  "minor": 15,
+                  "warning": 1
+                },
+                "topCause": {
+                  "kind": "backhaul",
+                  "cause": "Transport fault on the ring behind Agg node A2 (north-east)",
+                  "confidence": 0.94
+                }
+              }
+            ]
+          },
+          "prefetched": true
+        },
+        {
+          "name": "triageIncident",
+          "args": {},
+          "result": {
+            "incident": {
+              "id": "inc-20261007-backhaul-degradation",
+              "title": "Backhaul degradation behind A2",
+              "status": "triaged",
+              "openedAt": "2026-10-07T03:07:40.358Z",
+              "site": null,
+              "cells": 15,
+              "alarms": 21,
+              "severity": {
+                "critical": 0,
+                "major": 5,
+                "minor": 15,
+                "warning": 1
+              },
+              "topCause": {
+                "kind": "backhaul",
+                "cause": "Transport fault on the ring behind Agg node A2 (north-east)",
+                "confidence": 0.94
+              }
+            },
+            "alarmTypes": [
+              "S1_PATH_LATENCY",
+              "LINK_PACKET_LOSS",
+              "CELL_THROUGHPUT_DEGRADED"
+            ],
+            "hypotheses": [
+              {
+                "rank": "h1",
+                "kind": "backhaul",
+                "cause": "Transport fault on the ring behind Agg node A2 (north-east)",
+                "confidence": 0.94,
+                "evidence": [
+                  "100% of alarmed cells (15/15) sit under A2",
+                  "5 backhaul links under A2 report packet loss",
+                  "no hardware alarm on any affected site — cells themselves are healthy",
+                  "core reports S1-U latency towards the same node"
+                ],
+                "cells": [
+                  "c07",
+                  "c19",
+                  "c28",
+                  "c08",
+                  "c20",
+                  "c29",
+                  "c09",
+                  "c21"
+                ],
+                "actions": [
+                  "reroute-backhaul",
+                  "dispatch-technician"
+                ]
+              }
+            ],
+            "countersOfNote": [
+              {
+                "cell": "c07",
+                "rrcAttempts": 667,
+                "rrcAttemptsBaseline": 667,
+                "rrcSuccessPct": 99.2,
+                "prbUtilPct": 41,
+                "throughputMbps": 41.5,
+                "throughputBaseline": 92.8,
+                "dropPct": 2.5
+              },
+              {
+                "cell": "c08",
+                "rrcAttempts": 645,
+                "rrcAttemptsBaseline": 645,
+                "rrcSuccessPct": 99.4,
+                "prbUtilPct": 38,
+                "throughputMbps": 44.1,
+                "throughputBaseline": 92.4,
+                "dropPct": 2.44
+              },
+              {
+                "cell": "c09",
+                "rrcAttempts": 875,
+                "rrcAttemptsBaseline": 875,
+                "rrcSuccessPct": 99.3,
+                "prbUtilPct": 44,
+                "throughputMbps": 39.6,
+                "throughputBaseline": 91.9,
+                "dropPct": 2.39
+              },
+              {
+                "cell": "c16",
+                "rrcAttempts": 2113,
+                "rrcAttemptsBaseline": 2113,
+                "rrcSuccessPct": 99.2,
+                "prbUtilPct": 60,
+                "throughputMbps": 99.3,
+                "throughputBaseline": 209.7,
+                "dropPct": 2.39
+              },
+              {
+                "cell": "c17",
+                "rrcAttempts": 1643,
+                "rrcAttemptsBaseline": 1643,
+                "rrcSuccessPct": 99.1,
+                "prbUtilPct": 60,
+                "throughputMbps": 103.6,
+                "throughputBaseline": 233.1,
+                "dropPct": 2.41
+              },
+              {
+                "cell": "c18",
+                "rrcAttempts": 630,
+                "rrcAttemptsBaseline": 630,
+                "rrcSuccessPct": 98.8,
+                "prbUtilPct": 35,
+                "throughputMbps": 47.3,
+                "throughputBaseline": 99.3,
+                "dropPct": 2.4
+              }
+            ],
+            "note": "Alarms and counters come from the synthetic replica; the ranking is computed from topology, not scripted."
+          },
+          "prefetched": true
+        },
+        {
+          "name": "simulateRemediation",
+          "args": {
+            "incidentId": "inc-20261007-backhaul-degradation",
+            "action": "reroute-backhaul"
+          },
+          "result": {
+            "incident": {
+              "id": "inc-20261007-backhaul-degradation",
+              "title": "Backhaul degradation behind A2",
+              "status": "triaged",
+              "openedAt": "2026-10-07T03:07:40.358Z",
+              "site": null,
+              "cells": 15,
+              "alarms": 21,
+              "severity": {
+                "critical": 0,
+                "major": 5,
+                "minor": 15,
+                "warning": 1
+              },
+              "topCause": {
+                "kind": "backhaul",
+                "cause": "Transport fault on the ring behind Agg node A2 (north-east)",
+                "confidence": 0.94
+              }
+            },
+            "now": {
+              "availability": 99.8,
+              "throughput": 47.6,
+              "dropRate": 2.43,
+              "signalling": 100
+            },
+            "recommended": {
+              "action": "reroute-backhaul",
+              "label": "Reroute backhaul",
+              "targetSystem": "Transport NMS",
+              "risk": "medium",
+              "reason": "indicated for the top cause, every SLA gate passes on the pessimistic band edge at 120 min, lowest risk of the passing actions"
+            },
+            "indicatedActions": [
+              "reroute-backhaul",
+              "dispatch-technician"
+            ],
+            "simulations": [
+              {
+                "action": "reroute-backhaul",
+                "label": "Reroute backhaul",
+                "targetSystem": "Transport NMS",
+                "risk": "medium",
+                "reversible": true,
+                "leadMinutes": 5,
+                "indicated": true,
+                "gate": "pass",
+                "checkAtMinutes": 120,
+                "kpisAtGate": [
+                  {
+                    "kpi": "availability",
+                    "now": 99.8,
+                    "median": 99.89,
+                    "pessimistic": 99.8,
+                    "sla": ">= 99.5",
+                    "pass": true
+                  },
+                  {
+                    "kpi": "throughput",
+                    "now": 47.6,
+                    "median": 96.28,
+                    "pessimistic": 93.82,
+                    "sla": ">= 85",
+                    "pass": true
+                  },
+                  {
+                    "kpi": "dropRate",
+                    "now": 2.43,
+                    "median": 0.45,
+                    "pessimistic": 0.56,
+                    "sla": "<= 1",
+                    "pass": true
+                  }
+                ],
+                "sideEffects": [
+                  "Protection path shares capacity with the other sites on the ring; watch their throughput."
+                ]
+              }
+            ],
+            "note": "Simulated on the synthetic replica; approval is a human click on the Remediation Simulator."
+          }
+        }
+      ],
+      "memoryBlock": "Past results and decisions (what was simulated, solved or approved before — the answer to \"what did we do last time\"; when two records are about the same thing, the LATEST is the current one):\n- Incident inc-20260912-backhaul-degradation (Backhaul degradation behind A2), cause \"Transport fault on the ring behind Agg node A2 (north-east)\": operator approved \"Reroute backhaul\" via Transport NMS (risk low, reversible true). Simulated at 120 min: availability 99.6 (≥ 99.5 ok), throughput 88.4 Mbps (≥ 85 ok), dropRate 0.9% (≤ 1% ok). Gate passed. (as of 2026-09-30T03:07Z)",
+      "evidence": {
+        "locale": "en",
+        "sources": [
+          {
+            "name": "listActiveAlarms",
+            "label": "alarm list",
+            "kind": "reading",
+            "facts": []
+          },
+          {
+            "name": "triageIncident",
+            "label": "incident triage",
+            "kind": "reading",
+            "facts": []
+          },
+          {
+            "name": "simulateRemediation",
+            "label": "remediation simulator",
+            "kind": "simulation",
+            "facts": [
+              "gate read on the pessimistic band edge"
+            ]
+          }
+        ],
+        "records": [
+          {
+            "id": "47658112-f172-419c-b385-54b7fcbb2c66",
+            "kind": "outcome",
+            "when": "2026-09-30",
+            "text": "Incident inc-20260912-backhaul-degradation (Backhaul degradation behind A2), cause \"Transport fault on the ring behind Agg node A2 (north-e…"
+          }
+        ]
+      },
+      "ruleChecks": {
+        "reached": [],
+        "applied": [],
+        "failed": []
+      },
+      "criticScores": [
+        null
+      ],
+      "iterations": 1,
+      "model": "qwen3.8-flash-next",
+      "ms": 65568,
+      "at": "2026-10-07T03:08:48.691Z",
+      "ability": "M1",
+      "check": {
+        "id": "recallsDecision",
+        "mustMatch": [
+          "rerout(e|ing)",
+          "transport nms",
+          "pass(ed)?|held|hold"
+        ],
+        "mustNotMatch": [
+          "approved \"restart cell\"",
+          "approved \"load-balance"
+        ]
+      },
+      "withMemory": true,
+      "postState": {
+        "pendingRules": [],
+        "blockedEvents": 0
+      },
+      "recallMs": 30
+    },
+    {
+      "caseId": "mem-decision-congestion",
+      "kind": "fault",
+      "question": "Last time the cluster was congested, what was approved and what did the simulation say about the gate?",
+      "answer": "**Load-balancing was approved, and the simulation had failed the SLA gate on two of three KPIs.**\n\nRecorded 2026‑10‑01T03:08Z for incident **inc‑20260913‑congestion** (\"Capacity exhausted on c16, c15, c17\"), top cause *transport fault on the ring behind Agg node A2 (north‑east)*:\n\n- **Approved:** *Load-balance to neighbours* via SON — risk low, reversible true.\n- **Simulated 120‑min band:**\n  - Availability **99.5%** — gate ≥ 99.5, **pass**\n  - Throughput **47.9 Mbps** — gate ≥ 85, **FAIL**\n  - Drop rate **2.42%** — gate ≤ 1%, **FAIL**\n\nSo the gate verdict was **failed**, largely because load-balancing only spreads traffic over cells that share the same saturated backhaul ring — the transport fault, not the radio, was the binding constraint.\n\nFor context, the cluster now reads 60 cells / 9 tracking areas in Seoul Gangnam‑gu, paging 4.76M over 24h, location updates +16.4% week‑over‑week, 34 open anomalies — a fresh reading, not the congestion event.\n\n**Caveat from the record:** last time the operator approved an action *against* a failed gate. If you want, I can pull today's active alarms and simulate remediation options so the gate verdict is in hand before approval — and if transport is again the constraint, *reroute-backhaul* or *add-carrier* would be the actions worth simulating first.",
+      "toolCalls": [
+        {
+          "name": "getClusterSummary",
+          "args": {},
+          "result": {
+            "cluster": "Seoul Gangnam-gu",
+            "cells": 60,
+            "trackingAreas": 9,
+            "taLists": 3,
+            "paging24h": 4763595,
+            "locationUpdates24h": 28530,
+            "locationUpdateChangePct": 16.4,
+            "energyKwh24h": 2496,
+            "peakHourPaging": 296520,
+            "peakHourLocationUpdates": 1505,
+            "anomalies": 34
+          },
+          "prefetched": true
+        }
+      ],
+      "memoryBlock": "Past results and decisions (what was simulated, solved or approved before — the answer to \"what did we do last time\"; when two records are about the same thing, the LATEST is the current one):\n- Incident inc-20260913-congestion (Capacity exhausted on c16, c15, c17), cause \"Transport fault on the ring behind Agg node A2 (north-east)\": operator approved \"Load-balance to neighbours\" via SON (risk low, reversible true). Simulated at 120 min: availability 99.5 (≥ 99.5 ok), throughput 47.9 Mbps (≥ 85 FAIL), dropRate 2.42% (≤ 1% FAIL). Gate failed. (as of 2026-10-01T03:08Z)",
+      "evidence": {
+        "locale": "en",
+        "sources": [
+          {
+            "name": "getClusterSummary",
+            "label": "cluster summary",
+            "kind": "reading",
+            "facts": []
+          }
+        ],
+        "records": [
+          {
+            "id": "b3b6eeb0-0637-4225-ac06-a2c067bdf60a",
+            "kind": "outcome",
+            "when": "2026-10-01",
+            "text": "Incident inc-20260913-congestion (Capacity exhausted on c16, c15, c17), cause \"Transport fault on the ring behind Agg node A2 (north-east)\"…"
+          }
+        ]
+      },
+      "ruleChecks": {
+        "reached": [],
+        "applied": [],
+        "failed": []
+      },
+      "criticScores": [
+        null
+      ],
+      "iterations": 1,
+      "model": "qwen3.8-flash-next",
+      "ms": 47359,
+      "at": "2026-10-07T03:09:36.063Z",
+      "ability": "M1",
+      "check": {
+        "id": "recallsDecision",
+        "mustMatch": [
+          "load-?balanc",
+          "\\bSON\\b",
+          "fail"
+        ]
+      },
+      "withMemory": true,
+      "postState": {
+        "pendingRules": [],
+        "blockedEvents": 0
+      },
+      "recallMs": 9
+    },
+    {
+      "caseId": "mem-fresh-lu",
+      "kind": "fault",
+      "question": "How many location updates did the cluster carry in the last 24 hours?",
+      "answer": "**28,530 location updates** in the last 24 hours across the Gangnam-gu cluster.\n\nContext from the same fresh reading:\n- Paging: 4,763,595 (peak hour 296,520; peak-hour location updates 1,505)\n- Location updates are **+16.4% week-over-week** — up, but far below the 41% surge recorded on 2026-10-06\n- 60 cells, 9 tracking areas, 3 TA-Lists; **34 anomalous hours** flagged, which is the number worth watching\n- Night energy: 2,496 kWh\n\nThe 34 anomalous hours matter more than the totals here: a moderate headline rise with that many outlier hours usually points to a specific TA-List or time window rather than general growth. Say the word and I'll scan the location-update anomalies to find which hours.",
+      "toolCalls": [
+        {
+          "name": "getClusterSummary",
+          "args": {},
+          "result": {
+            "cluster": "Seoul Gangnam-gu",
+            "cells": 60,
+            "trackingAreas": 9,
+            "taLists": 3,
+            "paging24h": 4763595,
+            "locationUpdates24h": 28530,
+            "locationUpdateChangePct": 16.4,
+            "energyKwh24h": 2496,
+            "peakHourPaging": 296520,
+            "peakHourLocationUpdates": 1505,
+            "anomalies": 34
+          },
+          "prefetched": true
+        }
+      ],
+      "memoryBlock": "Known facts (each is a past reading — call the tool again before quoting a figure):\n- Seoul Gangnam-gu: 60 cells, 9 tracking areas, 3 TA-Lists. Last 24h: 4,912,004 paging, 31,977 location updates (41% vs same day last week), 29 anomalous hours. [getClusterSummary] (as of 2026-10-06T03:09Z) [stale]\nMarks in brackets say how far to lean on a row — unverified: this rule's effect has not been measured yet; measured helpful / neutral: what the panel found; contested: another standing rule disagrees, prefer the tool reading; low weight: it has repeatedly not helped; weak match: matched by keyword only, check it applies; stale: an old reading, re-read the tool.",
+      "evidence": {
+        "locale": "en",
+        "sources": [
+          {
+            "name": "getClusterSummary",
+            "label": "cluster summary",
+            "kind": "reading",
+            "facts": []
+          }
+        ],
+        "records": []
+      },
+      "ruleChecks": {
+        "reached": [],
+        "applied": [],
+        "failed": []
+      },
+      "criticScores": [
+        null
+      ],
+      "iterations": 1,
+      "model": "qwen3.8-flash-next",
+      "ms": 38895,
+      "at": "2026-10-07T03:10:14.968Z",
+      "ability": "M2",
+      "check": {
+        "id": "freshReading",
+        "staleFigures": [
+          "31,977",
+          "31977",
+          "4,912,004",
+          "4912004",
+          "41%"
+        ]
+      },
+      "withMemory": true,
+      "postState": {
+        "pendingRules": [],
+        "blockedEvents": 0
+      },
+      "recallMs": 39
+    },
+    {
+      "caseId": "mem-fresh-paging",
+      "kind": "fault",
+      "question": "What is the paging load right now, and how does it compare with what we saw yesterday?",
+      "answer": "**Paging is steady and slightly below yesterday — no action needed.**\n\n- **Right now (fresh replica read):** 4,763,595 paging events over the last 24h; busiest single hour 296,520.\n- **Yesterday's reading (remembered, recorded 2026-10-06T03:10Z — stale, not re-read):** 5,120,330. That puts the current figure **about 356,700 lower, roughly −7%** day over day.\n- **Is it a spike?** No. A paging anomaly scan over the last 48 hours returns **zero hours above two sigma** of the same-hour weekly mean, so paging is inside its normal band.\n\nCaveats worth noting for context:\n- Location updates (TAU — tracking-area updates) are **+16.4% week-over-week** at 28,530 in 24h, and the cluster still carries **34 open anomaly flags** overall. Those belong to the location-update side, not paging.\n- The \"yesterday\" figure is a remembered past reading, so treat the −7% as indicative rather than a like-for-like re-measurement.\n\nIf you want, I can run the TA-List (Tracking Area list) policy comparison to see whether the location-update lift is a configuration problem rather than a demand problem.",
+      "toolCalls": [
+        {
+          "name": "getClusterSummary",
+          "args": {},
+          "result": {
+            "cluster": "Seoul Gangnam-gu",
+            "cells": 60,
+            "trackingAreas": 9,
+            "taLists": 3,
+            "paging24h": 4763595,
+            "locationUpdates24h": 28530,
+            "locationUpdateChangePct": 16.4,
+            "energyKwh24h": 2496,
+            "peakHourPaging": 296520,
+            "peakHourLocationUpdates": 1505,
+            "anomalies": 34
+          },
+          "prefetched": true
+        },
+        {
+          "name": "detectAnomalies",
+          "args": {
+            "metric": "paging"
+          },
+          "result": {
+            "metric": "paging",
+            "count": 0,
+            "first": null,
+            "worst": null
+          }
+        }
+      ],
+      "memoryBlock": "Known facts (each is a past reading — call the tool again before quoting a figure):\n- Seoul Gangnam-gu: 60 cells, 9 tracking areas, 3 TA-Lists. Last 24h: 5,120,330 paging, 30,102 location updates (35% vs same day last week), 31 anomalous hours. [getClusterSummary] (as of 2026-10-06T03:10Z) [stale]\nMarks in brackets say how far to lean on a row — unverified: this rule's effect has not been measured yet; measured helpful / neutral: what the panel found; contested: another standing rule disagrees, prefer the tool reading; low weight: it has repeatedly not helped; weak match: matched by keyword only, check it applies; stale: an old reading, re-read the tool.",
+      "evidence": {
+        "locale": "en",
+        "sources": [
+          {
+            "name": "getClusterSummary",
+            "label": "cluster summary",
+            "kind": "reading",
+            "facts": []
+          },
+          {
+            "name": "detectAnomalies",
+            "label": "anomaly scan",
+            "kind": "reading",
+            "facts": [
+              "last 48 h"
+            ]
+          }
+        ],
+        "records": []
+      },
+      "ruleChecks": {
+        "reached": [],
+        "applied": [],
+        "failed": []
+      },
+      "criticScores": [
+        null
+      ],
+      "iterations": 1,
+      "model": "qwen3.8-flash-next",
+      "ms": 64270,
+      "at": "2026-10-07T03:11:19.246Z",
+      "ability": "M2",
+      "check": {
+        "id": "freshReading",
+        "staleFigures": [
+          "30,102",
+          "30102",
+          "35%"
+        ]
+      },
+      "withMemory": true,
+      "postState": {
+        "pendingRules": [],
+        "blockedEvents": 0
+      },
+      "recallMs": 9
+    },
+    {
+      "caseId": "mem-rule-simlabel",
+      "kind": "fault",
+      "question": "Compare the TA-List policies and recommend one.",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 81967,
+      "at": "2026-10-07T03:12:44.905Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M3",
+      "check": {
+        "id": "ruleApplied",
+        "rule": "Label simulator output as simulated.",
+        "answerMatches": "simulat"
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-rule-period",
+      "kind": "fault",
+      "question": "Are there anomalies in the location-update counters?",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6039,
+      "at": "2026-10-07T03:12:50.963Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M3",
+      "check": {
+        "id": "ruleApplied",
+        "rule": "Quote a counter's period and unit exactly as the tool returned them.",
+        "answerMatches": "σ|sigma|standard deviation"
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-reject-english",
+      "kind": "fault",
+      "question": "안녕, 오늘 네트워크 상태 어때?",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6011,
+      "at": "2026-10-07T03:12:57.000Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M4",
+      "check": {
+        "id": "notReproposed",
+        "rejected": "Always answer in English."
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-reject-repeat",
+      "kind": "fault",
+      "question": "Compare the TA-List policies and recommend one.",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6014,
+      "at": "2026-10-07T03:13:03.022Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M4",
+      "check": {
+        "id": "notReproposed",
+        "rejected": "Label simulator output as simulated."
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-pref-reversible",
+      "kind": "fault",
+      "question": "A sector is down and two actions pass the gate. Which do you recommend, given how we have decided before?",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6018,
+      "at": "2026-10-07T03:13:09.099Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M5",
+      "check": {
+        "id": "preferenceClause"
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-pref-against-gate",
+      "kind": "fault",
+      "question": "Should we load-balance even though the gate fails? What does our record say?",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6016,
+      "at": "2026-10-07T03:13:15.174Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M5",
+      "check": {
+        "id": "preferenceClause"
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-clean-identity",
+      "kind": "fault",
+      "question": "What is wrong on the network right now? Give me the root cause and what to simulate.",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6012,
+      "at": "2026-10-07T03:13:21.230Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M6",
+      "check": {
+        "id": "noSelfTalk"
+      },
+      "withMemory": true
+    },
+    {
+      "caseId": "mem-clean-greeting",
+      "kind": "fault",
+      "question": "Is any cell radiating but serving nobody?",
+      "answer": "",
+      "toolCalls": [],
+      "memoryBlock": "",
+      "criticScores": [],
+      "iterations": 0,
+      "model": "qwen3.8-flash-next",
+      "ms": 6034,
+      "at": "2026-10-07T03:13:27.286Z",
+      "error": "Failed after 3 attempts. Last error: AI_APICallError: Cannot connect to API: connect ECONNREFUSED 127.0.0.1:8889",
+      "ability": "M6",
+      "check": {
+        "id": "noSelfTalk"
+      },
+      "withMemory": true
+    }
+  ]
+}

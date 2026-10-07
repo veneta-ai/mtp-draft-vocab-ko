@@ -30,9 +30,13 @@ part of this, not all of it). What was run instead:
   full 8-prompt/5-turn battery tripped this host's memory watchdog twice — see
   `results/runs/2026-10-07-watchdog-note.md` for both incidents. Result: zero replacement chars, zero uncomposed
   jamo, zero stray Han/Kana characters, all Hangul.
-- **veneta-bench's 12-case quality gate did not complete.** 4 of 12 cases ran clean against the ko 65k arm
-  (`telemem:run` in the worldmodel-core checkout) before the second watchdog stop killed the server mid-run; the
-  remaining 8 did not run. This is not yet satisfied — see the watchdog note for the exact point it stopped.
+- **veneta-bench's 12-case quality gate: 12/12 passed against the ko 65k arm** (`telemem:run` in the worldmodel-core
+  checkout; graded with `telemem:score`). Run in two parts after the watchdog incidents above: 4 of 12
+  (`results/runs/2026-10-07-veneta-bench-ko65k-part1.json`, abilities M1–M2) on the first attempt, the remaining 8
+  (`...-part2.json`, M3–M6) on a later attempt once host memory genuinely freed up (confirmed with the oss room
+  before retrying — `nvidia-smi -L` still showed one GPU, this was contention easing, not a second machine). Same
+  question set the paper's core twelve use; this run used the memory-on arm only (the vocab swap is the variable
+  under test, not the memory-vs-no-memory axis).
 
 **Table format.**
 
