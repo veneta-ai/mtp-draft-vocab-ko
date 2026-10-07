@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300">
+<!-- mtp-draft-vocab-ko banner. Mark: the VENETA unicorn (project-veneta-site/site/src/assets/unicorn.svg, 2026-10-02,
+     VENETA Inc.), reproduced here static (no Pet.astro animation hooks fire outside the site). Palette and square
+     corners follow the site's own tokens (project-veneta-site/site/src/styles/veneta-site.css): ink #161616,
+     ink-2 #525252, accent #5b4fb5, accent-tint #eeebf9, mint #2fd58a. -->
+<rect width="1200" height="300" fill="#ffffff"/>
+<g transform="translate(70 55) scale(0.62)">
+  <defs>
+    <linearGradient id="u-horn" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#f6dc8f"/><stop offset="1" stop-color="#d9a034"/></linearGradient>
+  </defs>
+  <ellipse cx="150" cy="222" rx="96" ry="5" fill="#140a3c" opacity=".12"/>
+  <g fill="#ffffff" stroke="#ffffff" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M74 104 C50 100 28 118 28 148 C28 166 20 182 12 196 C36 190 52 170 52 150 C52 136 60 120 80 110 Z"/><path d="M72 110 C56 118 44 140 48 168 C40 186 30 198 22 206 C44 200 58 180 60 160 C62 142 66 126 78 116 Z"/>
+  <g transform="translate(104 138)"><path d="M-12 0 L12 0 C10 18 4 28 0 36 L-14 36 Z"/><g transform="translate(-7 34)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <g transform="translate(178 134)"><path d="M-10 0 L10 0 L6 38 L-6 38 Z"/><g transform="translate(0 36)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <g transform="translate(92 140)"><path d="M-12 0 L12 0 C10 18 4 28 0 36 L-14 36 Z"/><g transform="translate(-7 34)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <g transform="translate(166 136)"><path d="M-10 0 L10 0 L6 38 L-6 38 Z"/><g transform="translate(0 36)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <path d="M150 92 C172 92 186 104 188 124 C190 142 178 156 150 158 C122 160 98 160 84 152 C66 144 60 122 70 106 C78 96 112 90 150 92 Z"/>
+  <path d="M138 100 C146 70 174 48 206 38 L226 50 C214 68 198 88 186 126 L150 122 Z"/><path d="M204 38 C216 28 236 30 248 42 C258 54 270 70 280 88 C282 96 274 102 262 100 C250 98 238 92 228 80 C222 72 214 62 208 54 Z"/><path d="M212 38 L214 10 L228 32 Z"/><path d="M226 34 L236 8 L244 34 Z"/><path d="M208 38 C184 16 154 22 152 48 C168 36 190 38 208 42 Z"/><path d="M188 52 C160 36 128 44 128 72 C146 54 172 56 188 56 Z"/><path d="M170 66 C138 60 108 80 122 106 C134 84 154 74 170 70 Z"/><path d="M222 34 C208 36 206 50 220 58 C218 48 224 42 236 40 Z"/><path d="M238 36 L254 42 L282 -8 Z"/>
+  </g>
+  <g fill="#1d1a2e">
+  <path d="M74 104 C50 100 28 118 28 148 C28 166 20 182 12 196 C36 190 52 170 52 150 C52 136 60 120 80 110 Z"/><path d="M72 110 C56 118 44 140 48 168 C40 186 30 198 22 206 C44 200 58 180 60 160 C62 142 66 126 78 116 Z"/>
+  <g transform="translate(104 138)"><path d="M-12 0 L12 0 C10 18 4 28 0 36 L-14 36 Z"/><g transform="translate(-7 34)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <g transform="translate(178 134)"><path d="M-10 0 L10 0 L6 38 L-6 38 Z"/><g transform="translate(0 36)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <g transform="translate(92 140)"><path d="M-12 0 L12 0 C10 18 4 28 0 36 L-14 36 Z"/><g transform="translate(-7 34)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <g transform="translate(166 136)"><path d="M-10 0 L10 0 L6 38 L-6 38 Z"/><g transform="translate(0 36)"><path d="M-6 0 L6 0 L5 40 L-5 40 Z"/><path d="M-7 38 L7 38 L8 48 L-8 48 Z"/></g></g>
+  <path d="M150 92 C172 92 186 104 188 124 C190 142 178 156 150 158 C122 160 98 160 84 152 C66 144 60 122 70 106 C78 96 112 90 150 92 Z"/>
+  <path d="M138 100 C146 70 174 48 206 38 L226 50 C214 68 198 88 186 126 L150 122 Z"/><path d="M204 38 C216 28 236 30 248 42 C258 54 270 70 280 88 C282 96 274 102 262 100 C250 98 238 92 228 80 C222 72 214 62 208 54 Z"/><path d="M212 38 L214 10 L228 32 Z"/><path d="M226 34 L236 8 L244 34 Z"/><path d="M208 38 C184 16 154 22 152 48 C168 36 190 38 208 42 Z"/><path d="M188 52 C160 36 128 44 128 72 C146 54 172 56 188 56 Z"/><path d="M170 66 C138 60 108 80 122 106 C134 84 154 74 170 70 Z"/><path d="M222 34 C208 36 206 50 220 58 C218 48 224 42 236 40 Z"/>
+    <path d="M238 36 L254 42 L282 -8 Z" fill="url(#u-horn)"/>
+    <path d="M234 56 C241 48 253 49 258 56 C253 61 241 62 234 56 Z" fill="#ffffff"/><circle cx="247" cy="55.5" r="3" fill="#1d1a2e"/><circle cx="245.5" cy="54" r="1" fill="#ffffff"/>
+    <path d="M266 94 q5 3 9 0" stroke="#ffffff" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".9"/>
+    <path d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z" fill="#e2b457" transform="translate(288 -4)"/>
+    <path d="M0 -6 L1.6 -1.6 L6 0 L1.6 1.6 L0 6 L-1.6 1.6 L-6 0 L-1.6 -1.6 Z" fill="#e2b457" transform="translate(266 -10) scale(.7)"/>
+  </g>
+</g>
+<text x="300" y="132" font-family="IBM Plex Sans,Pretendard,Helvetica Neue,Arial,sans-serif" font-size="56" font-weight="600" fill="#161616">mtp-draft-vocab-ko</text>
+<text x="302" y="170" font-family="IBM Plex Sans,Pretendard,Helvetica Neue,Arial,sans-serif" font-size="22" fill="#525252">Korean draft vocabularies for MTP speculative decoding</text>
+<rect x="302" y="192" width="64" height="3" fill="#5b4fb5"/>
+<g font-family="IBM Plex Mono,ui-monospace,Menlo,Consolas,monospace" font-size="15" fill="#161616">
+  <rect x="302" y="216" width="112" height="30" fill="#eeebf9"/><text x="314" y="236">Apache-2.0</text>
+  <rect x="422" y="216" width="92" height="30" fill="#eeebf9"/><text x="434" y="236">FR-Spec</text>
+  <rect x="522" y="216" width="150" height="30" fill="#eeebf9"/><text x="534" y="236">veneta-ai</text>
+</g>
+</svg>

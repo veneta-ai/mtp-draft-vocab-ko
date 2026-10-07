@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" width="640" height="300">
+<!-- Qwen3.8-Flash-Next decode speed, shipped en+code vocab vs. +ko 65k, 2026-10-07. Numbers from results/README.md;
+     this image is illustrative, the table there is the source of truth. Palette: project-veneta-site's tokens. -->
+<rect width="640" height="300" fill="#ffffff"/>
+<text x="0" y="24" font-family="IBM Plex Sans,Pretendard,Helvetica Neue,Arial,sans-serif" font-size="14" fill="#6f6f6f" letter-spacing="0.5">DECODE, TOKENS/SEC · QWEN3.8-FLASH-NEXT · DGX SPARK</text>
+<line x1="0" y1="260" x2="640" y2="260" stroke="#e0e0e0" stroke-width="1"/>
+<rect x="140" y="130" width="120" height="130" fill="#d9d3f2"/>
+<text x="200" y="118" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,Menlo,Consolas,monospace" font-size="26" font-weight="600" fill="#161616">16.9</text>
+<text x="200" y="282" text-anchor="middle" font-family="IBM Plex Sans,Pretendard,Helvetica Neue,Arial,sans-serif" font-size="15" fill="#525252">shipped en+code</text>
+<rect x="380" y="60" width="120" height="200" fill="#5b4fb5"/>
+<text x="440" y="48" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,Menlo,Consolas,monospace" font-size="26" font-weight="600" fill="#161616">26.1</text>
+<text x="440" y="282" text-anchor="middle" font-family="IBM Plex Sans,Pretendard,Helvetica Neue,Arial,sans-serif" font-size="15" fill="#525252">+ ko 65k (this repo)</text>
+<rect x="540" y="56" width="90" height="34" fill="#eafaf2"/>
+<text x="585" y="79" text-anchor="middle" font-family="IBM Plex Mono,ui-monospace,Menlo,Consolas,monospace" font-size="17" font-weight="600" fill="#1f8a5c">+54%</text>
+</svg>

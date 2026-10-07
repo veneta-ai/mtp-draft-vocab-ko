@@ -1,10 +1,18 @@
+<p align="center"><img src="assets/banner.svg" alt="mtp-draft-vocab-ko" width="720"></p>
+
 # mtp-draft-vocab-ko
+
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-5b4fb5)](LICENSE)
+[![Hugging Face dataset](https://img.shields.io/badge/%F0%9F%A4%97%20dataset-veneta--ai%2Fmtp--draft--vocab--ko-ffcc4d)](https://huggingface.co/datasets/veneta-ai/mtp-draft-vocab-ko)
+[![Method: FR-Spec](https://img.shields.io/badge/method-FR--Spec%20(ACL%202025)-2fd58a)](https://aclanthology.org/2025.acl-long.198.pdf)
 
 Korean draft vocabularies for MTP speculative decoding — one file per tokenizer family, built from Korean Wikipedia,
 measured before and after on the same machine, so a model that answers in Korean gets the speed-up its English users
 already get.
 
 **Status: first result in (2026-10-07).** Qwen3.8 (`nvidia/Qwen3.8-Flash-Next-NVFP4`): decode 16.9 → 26.1 tok/s (+54%), draft acceptance 1.33 → 2.16 accepted/draft, zero replacement characters, zero Korean-script drift, veneta-bench's 12 memory-ability cases unaffected (12/12). Conditions and raw run files in `results/README.md`. Other families below are not yet measured; nothing is claimed before it is.
+
+<p align="center"><img src="assets/speedup-qwen3.8.svg" alt="Qwen3.8-Flash-Next decode speed, shipped vocabulary vs. +ko 65k: 16.9 to 26.1 tokens per second, +54%" width="560"></p>
 
 ## Why
 

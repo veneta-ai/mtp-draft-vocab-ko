@@ -16,3 +16,6 @@ This project builds on prior work it does not own:
   frequency, not Wikipedia text; the attribution is carried in every file header regardless.
 
 No customer or private corpus is used in any published file.
+
+The VENETA unicorn mark and wordmark in assets/banner.svg are VENETA Inc.'s brand assets, used here to identify the
+publisher; they are not licensed under Apache-2.0 and reuse outside this repository's own branding is not implied.
