@@ -53,6 +53,11 @@ works — the full per-family status table is on the [GitHub repo](https://githu
 MTP_DRAFT_VOCAB=draft_vocab_ko_qwen3.8_en_code_65k.txt
 ```
 
+**Engine support: vLLM only, today.** Ollama, LM Studio and SGLang support is planned, not yet built — llama.cpp
+(Ollama/LM Studio) recently gained Qwen3.8-Flash-Next MTP support but an equivalent vocabulary-restriction feature is
+unconfirmed, and SGLang's similar-sounding `--speculative-token-map` is EAGLE-2-only with a different file format. See
+the GitHub repo for the full detail.
+
 ## Measurements
 
 See the full results table and raw run files in the GitHub repository (protocol: same kit's en+code vocabulary as the
