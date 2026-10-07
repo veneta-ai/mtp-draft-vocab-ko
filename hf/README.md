@@ -76,7 +76,7 @@ vocabulary: vLLM issue [#58578](https://github.com/vllm-project/vllm/issues/5857
 [#59740](https://github.com/vllm-project/vllm/pull/59740) (stecasta, "Context Aware Sparse LM Head") proposed and
 built it before we did, with a more sophisticated mechanism, measured on the same model and hardware class as ours at
 different numbers (+15.2%/+22.6% there vs. +54% here) that we don't yet have an explanation for. See the GitHub
-repo's "Prior art" section for the full comparison and why our work is complementary, not a duplicate. Frequency
+repo's "Prior art" section for the full comparison and why our work is not a duplicate. Frequency
 source: Korean Wikipedia, CC BY-SA 4.0, attributed in every file header; the files contain token ids, not text.
 Everything here is Apache-2.0. No customer or private corpus is used. Source and issues:
 https://github.com/veneta-ai/mtp-draft-vocab-ko
