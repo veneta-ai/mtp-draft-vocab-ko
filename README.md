@@ -24,6 +24,8 @@ MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # 비우면 기�
 
 **엔진 지원: 지금은 vLLM만입니다.** 올라마·LM Studio·SGLang 지원은 개발 예정이며, 세 엔진 상황이 서로 다릅니다(2026-10-07 확인). llama.cpp(올라마·LM Studio가 쓰는 엔진)는 Qwen3.8-Flash-Next의 MTP 헤드 자체는 최근 지원이 들어갔지만(`--spec-type draft-mtp`), 저희가 쓰는 "어휘 축소" 기능이 있는지는 아직 확인하지 못했습니다 — 각 앱이 쓰는 llama.cpp 버전이 그 지원을 담고 있는지도 별도 확인이 필요합니다. SGLang은 `--speculative-token-map`이라는 비슷한 기능이 실제로 있지만 EAGLE-2 전용이라 MTP나 저희 모델에는 그대로 쓸 수 없고, 파일 형식도 다릅니다(`.pt` 텐서, 저희 파일은 순수 정수 목록). 둘 다 "하면 된다"가 아니라 "확인하고 만들어야" 하는 상태입니다.
 
+(2026-10-07 추가) llama.cpp의 한 포크인 [llmash](https://github.com/omgitsbase/llmash)에서 비슷한 기능을 실제로 확인했습니다 — MTP 헤드가 LM 헤드의 상위 131,072개 행만으로 드래프트하고, 그 행들을 로드 시점에 Q4_K로 재양자화합니다(검증은 그대로 전체 헤드로 함). 행 개수를 줄이는 것과 행마다 비트를 줄이는 것을 함께 쓰는 방식이라 저희 어휘 축소와 완전히 같지는 않지만, llama.cpp 계열에서도 이런 종류의 기능이 실제로 만들어질 수 있다는 걸 보여줍니다. 다만 이건 포크 하나의 자체 구현이고, 메인라인 llama.cpp(올라마·LM Studio가 받아 쓰는 버전)에 들어있다는 확인은 아닙니다. llmash가 공개한 벤치마크는 이 기능을 CUDA 그래프 퓨전, 커널 퓨전, 자체 양자화 빌드와 한 번에 묶어서 측정하기 때문에, 이 기능 하나만의 속도 향상 수치는 그 데이터에서 분리해낼 수 없었습니다 — 그래서 수치를 적지 않습니다.
+
 ## 어떤 모델에 적용되는가
 
 **지금 바로 쓸 수 있는 건 Qwen3.8-Flash-Next(nvidia/Qwen3.8-Flash-Next-NVFP4) 하나뿐입니다.** 나머지는 전부 같은 범용 vLLM 패치 하나를 직접 만들고 있는 중이니 기다려 주세요. 아래는 왜 그런지에 대한 전체 설명입니다 — 2026-10-07 재구성: 처음에는 "자체 MTP 헤드가 있으면 파일만 있으면 된다"와 "별도 드래프터는 엔진 패치가 필요하다"를 서로 다른 두 부류로 나눴는데, 틀렸습니다. 실제로는 거의 전부가 같은 부류입니다.
@@ -100,6 +102,15 @@ equivalent vocabulary-restriction feature, and each app's own vendored llama.cpp
 support before any of this is reachable there. SGLang has a real, similar-sounding feature
 (`--speculative-token-map`), but it's EAGLE-2-only — not MTP, not our model — and uses a different file format
 (a `.pt` tensor, not our plain integer list). Neither is "just works"; both need their own investigation and build.
+
+(Added 2026-10-07) A llama.cpp fork, [llmash](https://github.com/omgitsbase/llmash), confirms a similar feature is
+real: its MTP head drafts through only the 131,072 most-frequent rows of the LM head, requantized to Q4_K at load
+(verification still reads the full head unchanged). It combines fewer rows with fewer bits per row, so it isn't
+identical to our plain vocabulary restriction, but it does show this class of feature is buildable on the llama.cpp
+codebase. It does not confirm mainline llama.cpp — the version Ollama and LM Studio actually vendor — carries it;
+this is one fork's own implementation. llmash's published benchmarks measure it bundled together with per-round
+CUDA graphs, kernel fusion and its own quantized builds, so no speedup number for this feature in isolation can be
+pulled from their data — we aren't stating one.
 
 Other engines and families are added as they are measured; see `results/README.md`.
 
