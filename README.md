@@ -30,7 +30,9 @@ MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # 비우면 기�
 
 Qwen3.8-Flash-Next의 +54%는 범용 vLLM 기능이 아니라, nvidia/Qwen3.8-Flash-Next-NVFP4 체크포인트 전용으로 엔비디아가 배포한 모델 파일(mtp.py)에 MiaAI-Lab의 패치가 get_top_tokens()라는 메서드를 추가해서 나온 결과입니다. 이 메서드가 하는 일: lm_head 가중치에서 남길 어휘의 행만 골라(index_select) 새 버퍼로 모으고, 그 작은 행렬로만 곱하고(그래서 행렬곱 자체가 작아짐), 결과를 원래 어휘 id로 다시 매핑합니다. 이게 진짜로 속도가 빨라지는 이유입니다.
 
-EXAONE 4.5(실제 체크포인트 LGAI-EXAONE/EXAONE-4.5-33B로 확인, architectures: Exaone4_5_ForConditionalGeneration, MTP 레이어 1개)는 같은 패턴의 두 번째 확인 사례입니다. vLLM의 exaone4_5_mtp.py를 코드로 전부 읽었고(2026-10-07), compute_logits()가 평범한 ParallelLMHead 위의 표준 호출이라 get_top_tokens()도 내장 제한도 없습니다 — Qwen3.8처럼 파일만으로는 안 되고, get_top_tokens()를 추가하는 엔진 패치가 있어야 하는 쪽입니다. GLM 5.3 Flash와 DeepSeek V4.1 Flash는 처음에 같은 부류로 짐작했는데 틀렸습니다. 실제 체크포인트의 config.json을 직접 확인해보니 GLM 5.3 Flash는 Glm5NextForConditionalGeneration(glm5_next)으로, 짐작했던 Glm4Moe 계열이 아니었고, 보유한 vLLM 두 버전(안정판 0.27.1, MiaAI 키트가 쓰는 개발 나이틀리) 어디에도 glm5_next를 아는 코드가 없어서 MTP 배선을 확인할 수 없었습니다. DeepSeek V4.1 Flash도 DeepseekV41ForCausalLM(deepseek_v41)으로, 짐작했던 구버전 파일이 아니었습니다. 개발 나이틀리에 점(.) 없는 DeepSeek V4 자체는 등록되어 있지만, 그 모델 전용 엔비디아 파일에도 get_top_tokens()가 없어서 — 엔비디아가 Qwen3.8 이후로 아직 다른 가족에 이 패치를 확장하지 않았다는 뜻입니다. 이 둘은 버전 문제로 막힌 미확인 상태로 남겨둡니다. Qwen3-Next도 아직 실제 config로 재확인하지 못했으니 같은 "미확인" 쪽에 둡니다.
+EXAONE 4.5(실제 체크포인트 LGAI-EXAONE/EXAONE-4.5-33B로 확인, architectures: Exaone4_5_ForConditionalGeneration, MTP 레이어 1개)는 같은 패턴의 두 번째 확인 사례입니다. vLLM의 exaone4_5_mtp.py를 코드로 전부 읽었고(2026-10-07), compute_logits()가 평범한 ParallelLMHead 위의 표준 호출이라 get_top_tokens()도 내장 제한도 없습니다 — Qwen3.8처럼 파일만으로는 안 되고, get_top_tokens()를 추가하는 엔진 패치가 있어야 하는 쪽입니다. GLM 5.3 Flash와 DeepSeek V4.1 Flash는 처음에 같은 부류로 짐작했는데 틀렸습니다. 실제 체크포인트의 config.json을 직접 확인해보니 GLM 5.3 Flash는 Glm5NextForConditionalGeneration(glm5_next)으로, 짐작했던 Glm4Moe 계열이 아니었고, 보유한 vLLM 두 버전(안정판 0.27.1, MiaAI 키트가 쓰는 개발 나이틀리) 어디에도 glm5_next를 아는 코드가 없어서 MTP 배선을 확인할 수 없었습니다. DeepSeek V4.1 Flash도 DeepseekV41ForCausalLM(deepseek_v41)으로, 짐작했던 구버전 파일이 아니었습니다.
+
+**업데이트(2026-10-07, SGLang 소스로 재확인).** SGLang 0.5.21(wheel만 내려받아 코드만 읽음, 서버·GPU 사용 안 함)이 vLLM 두 버전보다 최신이라 다시 확인할 수 있었습니다. **GLM 5.3 Flash는 확정됐습니다** — Glm5NextForConditionalGenerationNextN이 DeepseekV3ForCausalLMNextN을 그대로 상속하고, 평범한 ParallelLMHead 위의 표준 호출이라 EXAONE 4.5·GLM4-MoE·Qwen3.8과 같은 부류(파일만으로는 안 되고 get_top_tokens() 패치가 필요)입니다. **DeepSeek V4(.1)는 다른 이유로 아예 다른 부류입니다** — SGLang에 평범한 MTP 옵션 자체가 없고, "DSpark"라는 완전히 다른 드래프팅 방식(DSparkV4MarkovHead, 자체 TP 샤딩 구조)만 있습니다. 이건 저희가 쓰는 "어휘 상위 n개만 남기기" 방식이 아니라 구조적으로 다른 메커니즘이라, vLLM 버전이 올라와도 저절로 해결될 문제가 아닙니다 — Gemma 4와 같은 "자체 메커니즘, 별도 조사" 부류로 옮깁니다. (SGLang 쪽 어휘 제한 기능도 직접 소비처를 grep해서 확인했는데, `speculative_token_map`은 EAGLE-2 전용 워커에서만 읽히고 MTP 계열 워커 어디에도 없어서, vLLM과 같은 공백이 SGLang에도 그대로 있습니다.) Qwen3-Next는 이번에도 확인 못 해서 "미확인"에 남습니다.
 
 본 모델과 별도의 더 작은 EAGLE 방식 드래프터 모델을 함께 쓰는 구조(예: EAGLE-3을 쓰는 Llama 3.3 70B)에도 같은 패치가 필요합니다. 처음에는 로짓 마스킹(전체 어휘로 계산한 뒤 일부만 고르는 방식)으로 범용 패치를 만들어 EAGLE-1(Llama 3.1 8B, 한국어 프롬프트 10개, 2026-10-07)로 실측했는데, 정확성은 지켰지만 속도는 전혀 빨라지지 않았습니다(연산량이 줄지 않는 구조였기 때문). 그래서 올바른 훅 지점인 get_top_tokens() 자체로 다시 만들었습니다 — MiaAI가 Qwen3.8에서 이미 쓴 바로 그 방법(lm_head 가중치에서 남길 어휘 행만 index_select로 새 텐서에 모으고, 더 작은 행렬로만 곱하고, 결과를 원래 어휘 id로 재매핑)을 EAGLE과 MTP 헤드 모델 모두에 적용되는 범용 패치로 포팅했습니다. 같은 EAGLE-1 환경, 같은 프롬프트, 같은 어휘 파일로 다시 측정한 결과: **디코딩 15.83 → 17.95 tok/s(+13.4%), 수락률 1.55 → 1.57, 대체 문자 0개 — 이번에는 진짜로 빨라졌습니다.** 부트 로그에서 lm_head 읽기 크기가 실제로 51.1%로 줄어든 것도 확인했습니다(65,536 / 128,256과 거의 정확히 일치). Qwen3.8의 54%보다는 작은데, EAGLE-1 자체의 드래프트 트랜스포머 연산이 lm_head 하나보다 턴당 비중이 훨씬 크고, 이 장비는 GPU 1개(TP=1)라 통신 절감 효과도 없기 때문으로 보입니다 — 구조상 설명이 되는 차이입니다. 드래프터가 타깃과 lm_head 가중치를 공유하는 경우(EAGLE에서 흔함)는 공유 텐서를 직접 잘라내지 않고 항상 새 텐서로 gather하고, get_top_tokens()는 공유 클래스가 아니라 해당 드래프터 인스턴스에만 types.MethodType으로 붙여서 "타깃 검증 경로는 절대 안 건드린다"는 안전 원칙을 지켰습니다. EXAONE 4.5로 두 번째 확인을 진행 중입니다.
 
@@ -42,8 +44,9 @@ EXAONE 4.5(실제 체크포인트 LGAI-EXAONE/EXAONE-4.5-33B로 확인, architec
 | --- | --- | --- |
 | Qwen3.8 (Qwen3.8-Flash-Next, nvidia 체크포인트) | 자체 MTP 헤드 + 엔비디아가 이미 패치한 get_top_tokens() | **측정 완료, 공개됨** |
 | Llama 3.1 8B + EAGLE-1 | 별도 드래프터 모델 | **get_top_tokens() 패치 실측: 15.83 → 17.95 tok/s(+13.4%), 수락률 1.55 → 1.57, 대체 문자 0개** |
-| EXAONE 4.5(LGAI-EXAONE/EXAONE-4.5-33B) · Llama 3.3 70B + EAGLE-3(그 외 EAGLE 방식 스택) | 자체 MTP 헤드 또는 별도 드래프터, 둘 다 get_top_tokens()가 없는 표준 vLLM 경로로 확인됨 | 같은 패치가 작동함을 EAGLE-1로 확인; EXAONE 4.5로 두 번째(자체 MTP 헤드) 확인 진행 중 |
-| GLM 5.3 Flash · DeepSeek V4.1 Flash · Qwen3-Next | 실제 체크포인트가 알려지지 않은/더 새 아키텍처(glm5_next, deepseek_v41) | 미확인 — 보유한 vLLM 버전이 이 아키텍처를 모름, 상류 지원 기다리는 중 |
+| EXAONE 4.5(LGAI-EXAONE/EXAONE-4.5-33B) · GLM 5.3 Flash · Llama 3.3 70B + EAGLE-3(그 외 EAGLE 방식 스택) | 자체 MTP 헤드 또는 별도 드래프터, 전부 get_top_tokens()가 없는 표준 경로로 확인됨(GLM은 SGLang 소스로 확인) | 같은 패치가 작동함을 EAGLE-1로 확인; EXAONE 4.5로 두 번째(자체 MTP 헤드) 확인 진행 중 |
+| Qwen3-Next | 아직 실제 체크포인트로 확인 못함 | 미확인 |
+| DeepSeek V4 / V4.1 Flash | SGLang에서 확인: 평범한 MTP가 아니라 "DSpark"라는 자체 드래프팅 방식(DSparkV4MarkovHead) | 이 패치의 대상이 아닌 별도 질문 — Gemma 4와 같은 부류, 조사 중 |
 | Gemma 4 + 어시스턴트 드래프터 | 체크포인트에 내장된 자체 제한 방식(FR-Spec식이 아닌 centroid projection) | 이 패치의 대상이 아닌 별도 질문 — 조사 중 |
 
 ## 선행 연구 — 먼저 한 사람들이 있습니다 (2026-10-07 추가)
@@ -120,12 +123,21 @@ no `get_top_tokens()`, no baked-in restriction — it needs the same engine patc
 file. GLM 5.3 Flash and DeepSeek V4.1 Flash were first guessed to be the same case from their family names; that guess
 was wrong. Their real checkpoints' `config.json` show `Glm5NextForConditionalGeneration` (`glm5_next`) and
 `DeepseekV41ForCausalLM` (`deepseek_v41`) — architectures neither of the two vLLM builds on hand (stable 0.27.1, nor
-the dev nightly the MiaAI kit itself uses) recognize, so their MTP wiring can't be determined yet; it needs a newer
-vLLM than what's available. The dev nightly does register a DeepSeek-V4 family (no ".1"), but even its own NVIDIA
-vendor file has no `get_top_tokens()` — NVIDIA hasn't extended its Qwen3.8 fast path to other families yet either.
-Both stay marked unverified, blocked on upstream vLLM support, not "expected to work". Qwen3-Next hasn't been checked
-against a real config either, so it's grouped with them rather than assumed confirmed on the same kind of
-family-name inference that was wrong for GLM and DeepSeek.
+the dev nightly the MiaAI kit itself uses) recognize.
+
+**Update (2026-10-07, re-checked against SGLang's source).** SGLang 0.5.21 (two wheels downloaded, source read only —
+no server, no GPU) is newer than either vLLM build, so it resolved part of this. **GLM 5.3 Flash is now confirmed**:
+`Glm5NextForConditionalGenerationNextN` inherits directly from `DeepseekV3ForCausalLMNextN`, a plain call over a
+standard `ParallelLMHead` — same bucket as EXAONE 4.5, GLM4-MoE and Qwen3.8, needs the `get_top_tokens()` patch, not
+just a file. **DeepSeek V4(.1) is a different story entirely**: SGLang has no plain MTP option for it at all, only a
+distinct drafting method called "DSpark" (`DeepseekV4ForCausalLMDSpark`, a `DSparkV4MarkovHead`, its own TP-sharding
+geometry) — not a reduced-argmax-over-vocabulary mechanism like everything else here, so a newer vLLM won't
+automatically unblock it the way GLM's confirmation did. It moves into the same bucket as Gemma 4: its own
+architecture, its own investigation, not a target for this patch. (SGLang's own vocabulary-restriction feature has the
+same gap vLLM did before tonight — grepping for where `speculative_token_map` is actually consumed shows it's read
+only inside the EAGLE-2 worker, nowhere in any MTP-method worker.) Qwen3-Next still hasn't been checked against a
+real config, so it stays grouped as unverified rather than assumed confirmed on the same kind of inference that was
+wrong for GLM and DeepSeek before this check.
 
 A model that pairs a full-size target with a separate, smaller EAGLE-style drafter (e.g. Llama 3.3 70B with EAGLE-3)
 needs that same patch too. We first built it as logit masking and measured it (EAGLE-1, Llama 3.1 8B, 10 Korean
@@ -161,8 +173,9 @@ rule as every number above — nothing claimed before it is.
 | --- | --- | --- |
 | Qwen3.8 (Qwen3.8-Flash-Next, NVIDIA's checkpoint) | built-in MTP head + NVIDIA's own `get_top_tokens()` patch | **measured, public** |
 | Llama 3.1 8B + EAGLE-1 | separate drafter model | **`get_top_tokens()` patch measured: 15.83 → 17.95 tok/s (+13.4%), acceptance 1.55 → 1.57, zero replacement characters** |
-| EXAONE 4.5 (`LGAI-EXAONE/EXAONE-4.5-33B`) · Llama 3.3 70B + EAGLE-3 (and other EAGLE-style stacks) | built-in MTP head or separate drafter, both confirmed to hit stock vLLM's `get_top_tokens()`-less path | same patch confirmed working via EAGLE-1; a second confirmation (a native MTP head) via EXAONE 4.5 is in progress |
-| GLM 5.3 Flash · DeepSeek V4.1 Flash · Qwen3-Next | real checkpoints use an architecture (`glm5_next`, `deepseek_v41`) not yet in either vLLM build on hand | unverified — blocked on a newer vLLM than we have, not yet checked |
+| EXAONE 4.5 (`LGAI-EXAONE/EXAONE-4.5-33B`) · GLM 5.3 Flash · Llama 3.3 70B + EAGLE-3 (and other EAGLE-style stacks) | built-in MTP head or separate drafter, all confirmed to hit a `get_top_tokens()`-less path (GLM confirmed via SGLang's source) | same patch confirmed working via EAGLE-1; a second confirmation (a native MTP head) via EXAONE 4.5 is in progress |
+| Qwen3-Next | not yet checked against a real checkpoint | unverified |
+| DeepSeek V4 / V4.1 Flash | confirmed via SGLang: no plain MTP option, a distinct "DSpark" drafting method (`DSparkV4MarkovHead`) instead | not a target for this patch — same bucket as Gemma 4, under investigation |
 | Gemma 4 + assistant drafter | its own checkpoint-baked restriction (centroid projection, not FR-Spec-style) | not a target for this patch — separate question, under investigation |
 
 ## Prior art — we are not first (added 2026-10-07)
