@@ -24,24 +24,23 @@ MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # 비우면 기�
 
 ## 어떤 모델에 적용되는가
 
-**지금 바로 쓸 수 있는 건 Qwen3.8-Flash-Next(nvidia/Qwen3.8-Flash-Next-NVFP4) 하나뿐입니다.** 나머지는 범용 vLLM 패치를 직접 만들고 있는 중이니 기다려 주세요 — GLM 5.3 Flash 등 다른 자체 MTP 헤드 가족은 검증과 측정이 남았고, Llama 3.3 70B + EAGLE-3 같은 별도 드래프터 구조는 패치가 끝나야 합니다. 아래는 왜 그런지에 대한 전체 설명입니다.
+**지금 바로 쓸 수 있는 건 Qwen3.8-Flash-Next(nvidia/Qwen3.8-Flash-Next-NVFP4) 하나뿐입니다.** 나머지는 전부 같은 범용 vLLM 패치 하나를 직접 만들고 있는 중이니 기다려 주세요. 아래는 왜 그런지에 대한 전체 설명입니다 — 2026-10-07 재구성: 처음에는 "자체 MTP 헤드가 있으면 파일만 있으면 된다"와 "별도 드래프터는 엔진 패치가 필요하다"를 서로 다른 두 부류로 나눴는데, 틀렸습니다. 실제로는 거의 전부가 같은 부류입니다.
 
-"추가 토큰을 누가 제안하는가"를 가르는 구조가 둘이고, 이 파일이 적용되는지 안 되는지를 가르는 것도 이 구조이지, 어느 회사가 만들었는지가 아닙니다.
+Qwen3.8-Flash-Next의 +54%는 범용 vLLM 기능이 아니라, nvidia/Qwen3.8-Flash-Next-NVFP4 체크포인트 전용으로 엔비디아가 배포한 모델 파일(mtp.py)에 MiaAI-Lab의 패치가 get_top_tokens()라는 메서드를 추가해서 나온 결과입니다. 이 메서드가 하는 일: lm_head 가중치에서 남길 어휘의 행만 골라(index_select) 새 버퍼로 모으고, 그 작은 행렬로만 곱하고(그래서 행렬곱 자체가 작아짐), 결과를 원래 어휘 id로 다시 매핑합니다. 이게 진짜로 속도가 빨라지는 이유입니다.
 
-**자체 MTP 헤드가 있는 모델은 자기 안에서 추가 토큰을 제안합니다.** 이 드래프트 헤드의 출력 투영을 어휘 부분집합으로 제한할 수 있고, 이 파일이 하는 일과 MiaAI-Lab의 오버레이가 다른 일곱 언어에서 이미 하는 일이 바로 그것입니다. Qwen3.8-Flash-Next는 측정을 마치고 공개되어 있습니다. GLM 5.3 Flash, DeepSeek V4.1 Flash, EXAONE 4.x와 다른 Qwen3.8/Qwen3-Next 체크포인트도 MTP 헤드가 있어 같은 종류의 파일을 받을 것으로 예상하지만, 아직 확인된 사실은 아닙니다. MiaAI-Lab의 오버레이는 Qwen3.8의 mtp.py를 대상으로 만들어졌고, 다른 가족의 vLLM 코드에도 같은 방식으로 붙는지는 아직 열린 확인 과제이며 사실로 공개하는 가정이 아닙니다. 이 가족들의 파일은 아직 여기에 없고, 위의 모든 숫자와 마찬가지로 주장에는 자신의 측정이 따라야 합니다.
+GLM 5.3 Flash·DeepSeek V4.1 Flash·Qwen3-Next의 vLLM 모델 파일을 코드로 읽어보니(2026-10-07), 셋 다 평범한 MTP 헤드가 있지만, get_top_tokens()가 없는 상태의 표준 vLLM MTPSpeculator로 처리됩니다. 그리고 MTPSpeculator는 EagleSpeculator와 클래스 구조가 사실상 같습니다 — 둘 다 DraftModelSpeculator를 상속하고, use_local_argmax_reduction은 모델에 get_top_tokens()가 없으면 아예 에러를 냅니다. 즉 이 모델들을 그냥 vLLM에 올리면, EAGLE 방식 별도 드래프터와 똑같이 "파일만으로는 안 되고, get_top_tokens()를 추가하는 엔진 패치가 있어야" 합니다. 이 체크포인트들의 실제 architectures 필드가 이 추론과 맞는지는 아직 확인 중입니다 — 추론이지 확정된 사실이 아닙니다.
 
-**본 모델과 별도의 더 작은 EAGLE 방식 드래프터 모델을 함께 쓰는 구조(예: EAGLE-3을 쓰는 Llama 3.3 70B)는 지금은 이 방법을 전혀 쓸 수 없습니다.** 거기서 제한해야 할 대상은 본 모델 안의 MTP 헤드가 아니라 별도 드래프터 자신의 어휘 헤드입니다. 범용 vLLM 패치를 직접 만들어 실측까지 했는데(EAGLE-1, Llama 3.1 8B, 한국어 프롬프트 10개, 2026-10-07) — **정확성은 지켰지만 속도는 빨라지지 않았습니다**(수락률 1.55로 두 arm이 동일, 복제·대체 문자 0개로 출력은 그대로였지만, 디코딩은 15.83 → 15.57 tok/s로 오히려 잡음 수준만큼 느려짐). 이유를 코드로 확인했습니다. 로짓 마스킹은 전체 어휘로 행렬곱을 다 계산한 **뒤에** 일부만 고르는 방식이라 연산량이 전혀 줄지 않습니다. Qwen3.8의 자체 MTP 헤드가 54% 빨라진 건 행렬곱 자체가 작아지기 때문(가중치 행렬을 줄인 어휘만큼만 곱함)인데, 로짓 마스킹은 그 효과가 없습니다. 진짜 고치려면 lm_head 가중치 행렬에서 남길 어휘의 행만 모아(gather) 행렬곱 자체를 줄이고, 그 결과를 원래 어휘 id로 다시 매핑해야 합니다 — EAGLE-3이 체크포인트에 미리 구워 넣은 draft_vocab_size/d2t 매핑과 같은 발상을, 저희 빈도 목록으로 동적으로 만드는 셈입니다. 드래프터가 타깃과 lm_head 가중치를 공유하는 경우(EAGLE에서 흔함)는 공유 텐서를 직접 잘라내지 않고 항상 새 텐서로 gather해야 "타깃 검증 경로는 절대 안 건드린다"는 안전 원칙이 지켜집니다 — 이 재설계는 별도 프로젝트로 다시 시간을 들여서 할 계획입니다.
+본 모델과 별도의 더 작은 EAGLE 방식 드래프터 모델을 함께 쓰는 구조(예: EAGLE-3을 쓰는 Llama 3.3 70B)에도 같은 패치가 필요합니다. 처음에는 로짓 마스킹(전체 어휘로 계산한 뒤 일부만 고르는 방식)으로 범용 패치를 만들어 EAGLE-1(Llama 3.1 8B, 한국어 프롬프트 10개, 2026-10-07)로 실측했는데, **정확성은 지켰지만 속도는 빨라지지 않았습니다**(수락률 1.55로 두 arm이 동일, 대체 문자 0개로 출력은 그대로였지만, 디코딩은 15.83 → 15.57 tok/s로 오히려 잡음 수준만큼 느려짐). 로짓 마스킹은 행렬곱을 다 계산한 뒤에 고르는 방식이라 연산량이 전혀 줄지 않기 때문입니다. 올바른 훅 지점은 get_top_tokens() 자체였습니다 — Qwen3.8에서 이미 검증된 바로 그 메서드를, EAGLE과 MTP 헤드 모델 양쪽에 똑같이 추가하는 패치 하나로 다시 만들고 있습니다. 드래프터가 타깃과 lm_head 가중치를 공유하는 경우(EAGLE에서 흔함)는 공유 텐서를 직접 잘라내지 않고 항상 새 텐서로 gather해야 "타깃 검증 경로는 절대 안 건드린다"는 안전 원칙이 지켜집니다.
 
-**어시스턴트 드래프터를 쓰는 Gemma 4는 위 EAGLE 경우와 다른 것으로 드러났습니다 — 2026-10-07 정정.** 같은 범용 패치가 통할 거라 가정했는데, 실제로 걸어 보니 아니었습니다. vLLM은 Gemma 4에 전용 코드 경로(Gemma4Proposer)를 따로 두고 있고, Gemma 4의 compute_logits()는 이미 masked_embedding이라는 레이어를 거칩니다 — 체크포인트 자체가 자기만의 어휘 제한 메커니즘(centroid projection과 token_ordering 버퍼)을 학습 때부터 내장하고 있다는 뜻입니다. MTP 헤드의 드래프트 어휘처럼 런타임에 파일로 바꿀 수 있는 게 아닙니다. 범용 EAGLE 패치가 애초에 건드릴 수 있는 대상이 아니었던 겁니다. 이 내장 메커니즘이 한국어를 이미 잘 다루는지, 아니면 이 저장소 전체가 고치려는 바로 그 영어 편향 문제를 똑같이 안고 있는지, 그리고 애초에 바꿀 수 있는 것인지는 완전히 별도의, 아직 답하지 않은 질문입니다 — 끝났다고 하지 않습니다. (이 구조는 veneta 자신의 통신 스택 구조라서 EAGLE 경우로 뭉뚱그리지 않고 따로 추적하고 있습니다.)
+**어시스턴트 드래프터를 쓰는 Gemma 4는 이 패치로 되는 대상이 아닙니다 — 2026-10-07 정정.** 같은 범용 패치가 통할 거라 가정했는데, 실제로 걸어 보니 아니었습니다. vLLM은 Gemma 4에 전용 코드 경로(Gemma4Proposer)를 따로 두고 있고, Gemma 4의 compute_logits()는 이미 masked_embedding이라는 레이어를 거칩니다 — 체크포인트 자체가 자기만의 어휘 제한 메커니즘(centroid projection과 token_ordering 버퍼)을 학습 때부터 내장하고 있다는 뜻입니다. MTP 헤드의 드래프트 어휘처럼 런타임에 파일이나 엔진 패치로 바꿀 수 있는 게 아닙니다. 이 내장 메커니즘이 한국어를 이미 잘 다루는지, 아니면 이 저장소 전체가 고치려는 바로 그 영어 편향 문제를 똑같이 안고 있는지, 그리고 애초에 바꿀 수 있는 것인지는 완전히 별도의, 아직 답하지 않은 질문입니다 — 끝났다고 하지 않습니다. (이 구조는 veneta 자신의 통신 스택 구조라서 따로 추적하고 있습니다.)
 
 한국어 다음은 아시아·아프리카·서구권의 다른 언어들도 같은 방식으로 만들 계획입니다. 아직 측정 전이라 위의 모든 숫자와 같은 규칙을 따릅니다 — 측정되기 전에는 주장하지 않습니다.
 
 | 가족 | 구조 | 상태 |
 | --- | --- | --- |
-| Qwen3.8 (Qwen3.8-Flash-Next) | 자체 MTP 헤드 | **측정 완료, 공개됨** |
-| GLM 5.3 Flash · DeepSeek V4.1 Flash · EXAONE 4.x · 다른 Qwen3.8/Qwen3-Next 체크포인트 | 자체 MTP 헤드 | 될 것으로 예상, 미확인 — 파일 아직 없음 |
-| Llama 3.3 70B + EAGLE-3(그 외 EAGLE 방식 스택) | 별도 드래프터 모델 | 로짓 마스킹 패치 실측(EAGLE-1): 정확함, 속도 효과 없음 — 가중치 슬라이싱으로 재설계 중 |
-| Gemma 4 + 어시스턴트 드래프터 | 체크포인트에 내장된 자체 제한 방식(FR-Spec식이 아닌 centroid projection) | 파일 교체도 범용 패치 대상도 아닌 별도 질문 — 조사 중 |
+| Qwen3.8 (Qwen3.8-Flash-Next, nvidia 체크포인트) | 자체 MTP 헤드 + 엔비디아가 이미 패치한 get_top_tokens() | **측정 완료, 공개됨** |
+| GLM 5.3 Flash · DeepSeek V4.1 Flash · Qwen3-Next · EXAONE 4.x(미확인) · Llama 3.3 70B + EAGLE-3(그 외 EAGLE 방식 스택) | 자체 MTP 헤드 또는 별도 드래프터, 둘 다 get_top_tokens()가 없는 표준 vLLM 경로 | 같은 패치 하나가 필요 — 로짓 마스킹으로 1차 실측(EAGLE-1): 정확하지만 속도 효과 없음; get_top_tokens() 포팅으로 다시 만드는 중 |
+| Gemma 4 + 어시스턴트 드래프터 | 체크포인트에 내장된 자체 제한 방식(FR-Spec식이 아닌 centroid projection) | 이 패치의 대상이 아닌 별도 질문 — 조사 중 |
 
 ## 라이선스와 크레딧
 
@@ -86,54 +85,52 @@ Other engines and families are added as they are measured; see `results/README.m
 ## Which models this applies to
 
 **Qwen3.8-Flash-Next (`nvidia/Qwen3.8-Flash-Next-NVFP4`) is the only model that works today.** Everything else is
-waiting on a generic vLLM patch we're building — other built-in-MTP-head families (GLM 5.3 Flash, etc.) still need
-their own verification and measurement, separate-drafter stacks (Llama 3.3 70B + EAGLE-3) need the patch itself. The
-rest of this section explains why.
+waiting on the same one generic vLLM patch we're building. The rest of this section explains why — **reframed
+2026-10-07**: we originally split this into two buckets, "built-in MTP head needs only a file" and "separate drafter
+needs an engine patch". That split was wrong. Almost everything actually needs the same patch.
 
-Two different architectures answer "what drafts the extra tokens", and that is what decides whether a file like this
-one can even apply, not which company trained the model.
+Qwen3.8-Flash-Next's +54% isn't a generic vLLM feature — it comes from a `get_top_tokens()` method MiaAI-Lab's patch
+adds to NVIDIA's own vendored model file (`mtp.py`) for the `nvidia/Qwen3.8-Flash-Next-NVFP4` checkpoint specifically.
+What it does: `index_select` the kept-vocabulary rows out of `lm_head`'s weight into a fresh buffer, run a smaller
+matmul against only those rows, map the reduced argmax index back to the true vocabulary id. That's a genuinely
+smaller GEMM, which is why it actually delivers a speedup.
 
-**A model with a built-in MTP head drafts its own extra tokens.** Its draft head's output projection can be restricted
-to a subset of the vocabulary — that is what this file does, and what MiaAI-Lab's overlay already does for seven other
-languages. Qwen3.8-Flash-Next is measured and public. GLM 5.3 Flash, DeepSeek V4.1 Flash, EXAONE 4.x and other
-Qwen3.8/Qwen3-Next checkpoints also have an MTP head and are **expected to take the same kind of file**, but that is
-not yet verified — MiaAI-Lab's overlay was built against Qwen3.8's `mtp.py`, and whether it attaches the same way to
-each other family's own vLLM code is an open check, not an assumption we are publishing as fact. No file for those
-families exists here yet; a claim awaits its own measurement, same as every number above.
+Reading GLM 5.3 Flash's, DeepSeek V4.1 Flash's and Qwen3-Next's vLLM model files (2026-10-07) shows a plain MTP head
+in each, but all three are dispatched through vLLM's stock `MTPSpeculator` with no `get_top_tokens()` defined — and
+`MTPSpeculator` is structurally the same as `EagleSpeculator`, both inheriting `DraftModelSpeculator`;
+`use_local_argmax_reduction` raises an error outright when the model has no `get_top_tokens()`. So on stock vLLM these
+models need the same engine patch as an EAGLE-style separate drafter, not just a vocabulary file. Whether these
+checkpoints' actual `architectures` fields really resolve to the files we read is still being confirmed — an
+inference, not yet a fact we're publishing as settled.
 
-**A model that pairs a full-size target with a separate, smaller EAGLE-style drafter model (e.g. Llama 3.3 70B with
-EAGLE-3) cannot use this method at all today.** The thing to restrict there is the separate drafter's own vocabulary
-head, not an MTP head inside the target. We built a generic vLLM patch for that and measured it (EAGLE-1, Llama 3.1
-8B, 10 Korean prompts, 2026-10-07) — **correctness held, but there was no speedup** (acceptance 1.55 identical in both
-arms, zero replacement/garbled characters either way, but decode went 15.83 → 15.57 tok/s, noise-level but in the
-wrong direction). We read the actual running code to find out why: masking logits happens *after* the full-vocabulary
-matmul already ran, so it cuts zero FLOPs — unlike Qwen3.8's native MTP head, where the +54% above comes from the
-weight matrix itself shrinking before the matmul. The real fix is to gather only the kept-vocabulary rows out of
-`lm_head`'s weight matrix before the matmul, shrinking the GEMM itself, then map the reduced argmax index back to the
-true vocabulary id — the same idea as EAGLE-3's own baked-in `draft_vocab_size`/`d2t` remapping, built dynamically from
-a frequency list instead of trained into the checkpoint. Where a drafter shares `lm_head` weights with its target (common for
-EAGLE), the kept rows must be gathered into a fresh tensor, never sliced from the shared one in place, to keep the
-"target verification path stays untouched" safety property. That redesign is its own project, not yet started.
+A model that pairs a full-size target with a separate, smaller EAGLE-style drafter (e.g. Llama 3.3 70B with EAGLE-3)
+needs that same patch too. We first built it as logit masking and measured it (EAGLE-1, Llama 3.1 8B, 10 Korean
+prompts, 2026-10-07) — **correctness held, but there was no speedup** (acceptance 1.55 identical in both arms, zero
+replacement/garbled characters either way, but decode went 15.83 → 15.57 tok/s, noise-level but in the wrong
+direction). We read the actual running code to find out why: masking logits happens *after* the full-vocabulary matmul
+already ran, so it cuts zero FLOPs. The right hook was `get_top_tokens()` all along — the exact method already proven
+on Qwen3.8 — and we're rebuilding the patch to add it to both MTP-head models and EAGLE drafters alike. Where a
+drafter shares `lm_head` weights with its target (common for EAGLE), the kept rows must be gathered into a fresh
+tensor, never sliced from the shared one in place, to keep the "target verification path stays untouched" safety
+property.
 
-**Gemma 4 with an assistant drafter turned out not to be the EAGLE case above — correction, 2026-10-07.** We assumed
-it needed the same generic patch; trying the patch against it showed otherwise. vLLM gives Gemma 4 its own dedicated
-code path (`Gemma4Proposer`), and Gemma 4's `compute_logits()` already routes through a `masked_embedding` layer —
-the checkpoint carries its *own* vocabulary-restriction mechanism (a centroid projection and a `token_ordering`
-buffer), baked in at training time, not a runtime file the way an MTP head's draft vocab is. A generic EAGLE patch
-was never going to touch it. Whether that built-in mechanism already covers Korean adequately, or has the same
-English-bias gap this whole repository exists to fix, and whether it can be swapped at all, is a separate, open
-question — not yet answered, not yet being called close. (This is VENETA's own telecom stack's architecture, which is
-why we are tracking it specifically rather than treating the EAGLE case as covering it.)
+**Gemma 4 with an assistant drafter is not a target for this patch at all — correction, 2026-10-07.** We assumed it
+needed the same generic patch; trying it showed otherwise. vLLM gives Gemma 4 its own dedicated code path
+(`Gemma4Proposer`), and Gemma 4's `compute_logits()` already routes through a `masked_embedding` layer — the
+checkpoint carries its *own* vocabulary-restriction mechanism (a centroid projection and a `token_ordering` buffer),
+baked in at training time, not something a runtime file or engine patch reaches. Whether that built-in mechanism
+already covers Korean adequately, or has the same English-bias gap this whole repository exists to fix, and whether it
+can be swapped at all, is a separate, open question — not yet answered. (This is VENETA's own telecom stack's
+architecture, which is why we track it specifically rather than lump it in.)
 
 After Korean, other languages across Asia, Africa and the West are planned on the same recipe. Not yet measured, same
 rule as every number above — nothing claimed before it is.
 
 | family | architecture | status |
 | --- | --- | --- |
-| Qwen3.8 (Qwen3.8-Flash-Next) | built-in MTP head | **measured, public** |
-| GLM 5.3 Flash · DeepSeek V4.1 Flash · EXAONE 4.x · other Qwen3.8/Qwen3-Next checkpoints | built-in MTP head | expected to work, unverified — no file yet |
-| Llama 3.3 70B + EAGLE-3 (and other EAGLE-style stacks) | separate drafter model | logit-masking patch measured (EAGLE-1): correct, no speedup — redesigning as weight-matrix slicing |
-| Gemma 4 + assistant drafter | its own checkpoint-baked restriction (centroid projection, not FR-Spec-style) | open question, not a file-swap or a generic-patch target — under investigation |
+| Qwen3.8 (Qwen3.8-Flash-Next, NVIDIA's checkpoint) | built-in MTP head + NVIDIA's own `get_top_tokens()` patch | **measured, public** |
+| GLM 5.3 Flash · DeepSeek V4.1 Flash · Qwen3-Next · EXAONE 4.x (unverified) · Llama 3.3 70B + EAGLE-3 (and other EAGLE-style stacks) | built-in MTP head or separate drafter — both hit stock vLLM's `get_top_tokens()`-less path | need the same one patch — logit-masking tried first (EAGLE-1): correct, no speedup; rebuilding as a `get_top_tokens()` port |
+| Gemma 4 + assistant drafter | its own checkpoint-baked restriction (centroid projection, not FR-Spec-style) | not a target for this patch — separate question, under investigation |
 
 ## Licence and credit
 
