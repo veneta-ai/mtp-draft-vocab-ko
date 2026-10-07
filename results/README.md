@@ -18,10 +18,21 @@ Korean numbers are comparable to theirs.
 veneta-bench's 12 memory-ability cases run with and without the file (same 12/12 expected) plus a byte-identical diff of the
 greedy outputs on the 20 prompts.
 
+**Quality, as actually measured (2026-10-07).** A literal byte-identical diff of greedy outputs between arms was not
+meaningful on this engine: at temp 0, repeat token counts on the same prompt varied slightly run-to-run even within
+one arm (e.g. ko-gen-01: 143/132/125 tokens across 3 repeats, shipped-vocab arm) — continuous batching changes the
+floating-point reduction order per batch, a known vLLM determinism caveat (the kit ships `patch_determinism.py` for
+part of this, not all of it). The quality gate actually run: zero replacement characters across all 120 generations
+in both arms (`measure.py`'s own counter), plus a dedicated Korean-script fidelity check (`bench/audit-korean.py`,
+4 short prompts after two long-form attempts tripped this host's memory watchdog at 16k context — see the note in
+`runs/`) — zero replacement chars, zero uncomposed jamo, zero stray Han/Kana characters, all Hangul. The
+veneta-bench 12-case check (same backbone, same loop, vocab swapped) is tracked separately; see the run file it
+produced if present.
+
 **Table format.**
 
 | family · checkpoint | machine | engine | vocab | k | decode tok/s (shipped → ko) | acceptance | prompts | date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| (first row lands with stage 1) | | | | | | | | |
+| nvidia/Qwen3.8-Flash-Next-NVFP4 | DGX Spark (GB10) | vLLM (MiaAI-Lab Single-DGX-Spark kit) | shipped 47k → ko 65k | 3 | 16.9 → 26.1 (+54%) | 1.33 → 2.16 accepted/draft | 20 (ko-general-10 + ko-domain-10), 3 repeats, 400 max tokens | 2026-10-07 |
 
 Raw run files go next to the table as `runs/<date>-<family>-<vocab>.jsonl`.
