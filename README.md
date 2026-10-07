@@ -51,13 +51,13 @@ EXAONE 4.5(실제 체크포인트 LGAI-EXAONE/EXAONE-4.5-33B로 확인, architec
 
 ## 선행 연구 — 먼저 한 사람들이 있습니다 (2026-10-07 추가)
 
-드래프터의 어휘를 줄이는 아이디어 자체는 저희가 처음이 아닙니다. vLLM 저장소에서 찾았습니다. akapug님이 저희보다 먼저(2026-09-24) 이슈 #58578에서 같은 아이디어(타깃과 lm_head를 공유하는 MTP 드래프터의 어휘를 줄이자)를 제안하고 Intel Arc에서 Qwen3.5 계열로 +25~29%를 측정했습니다. stecasta님의 PR #59740("Context Aware Sparse LM Head", 2026-10-02 오픈, 아직 미병합)은 이 이슈를 정면으로 다루는, 저희보다 훨씬 정교한 구현입니다 — 저희처럼 고정된 빈도 목록 하나가 아니라 고정 32k 목록에 드래프트 토큰마다 rank-256 SVD로 고르는 16k를 더합니다. **같은 모델(Qwen3.8-Flash-Next-NVFP4), 같은 하드웨어(DGX Spark 1대)로 측정했는데 숫자는 +15.2%(BF16)·+22.6%(NVFP4)로, MiaAI의 +54%(저희 Qwen3.8 결과가 기대는 바로 그 패치)와 꽤 다릅니다.** 이유는 추측하지 않습니다 — 프롬프트 구성, 동시 요청 수, 정적 대 동적 선택, 기준선 차이 등 여러 가능성이 있을 뿐 확인된 바 없습니다. 다만 "같은 것"이라는 두 숫자가 이렇게 다르다는 사실 자체는 숨기지 않고 적어둡니다.
+드래프터의 어휘를 줄이는 아이디어 자체는 저희가 처음이 아닙니다. vLLM 저장소에서 찾았습니다. akapug님이 저희보다 먼저(2026-09-24) 이슈 #58578에서 같은 아이디어(타깃과 lm_head를 공유하는 MTP 드래프터의 어휘를 줄이자)를 제안하고 Intel Arc에서 Qwen3.5 계열로 +25~29%를 측정했습니다. stecasta님의 PR #59740("Context Aware Sparse LM Head", 2026-10-02 오픈, 아직 미병합)은 이 이슈를 정면으로 다루는, 저희보다 훨씬 정교한 구현입니다 — 저희처럼 고정된 빈도 목록 하나가 아니라 고정 32k 목록에 드래프트 토큰마다 rank-256 SVD로 고르는 16k를 더합니다. **같은 모델(Qwen3.8-Flash-Next-NVFP4), 같은 하드웨어(DGX Spark 1대)로 측정했는데 숫자는 +15.2%(BF16)·+22.6%(NVFP4)로, MiaAI의 +54%(저희 Qwen3.8 결과가 기대는 바로 그 패치)와 꽤 다릅니다.** 이유는 아직 확인하지 않았습니다 — 프롬프트 구성, 동시 요청 수, 정적 대 동적 선택, 기준선 차이 등 여러 가능성이 있습니다.
 
-PR #59740의 변경 파일 목록을 직접 확인했습니다. `qwen3_5_mtp.py`, `qwen3_eagle3.py`, `qwen3_dflash.py`, `qwen3_dspark.py`, `llama_eagle3.py`, `deepseek_eagle3.py`, `gemma4_dspark.py`, `qwen4_exp/{nvidia,amd}/mtp.py` 같은 신형 모델 파일만 건드리고, 저희가 오늘 밤 작업한 평범한 `eagle.py`, `exaone4_5_mtp.py`, `glm4_moe_mtp.py`, `deepseek_mtp.py` 같은 구형 범용 MTP/EAGLE 파일은 건드리지 않습니다. 그래서 저희 작업이 같은 걸 다시 만든 게 아니라, 그 PR이 다루지 않는 모델군을 더 단순한 방식(고정 빈도 목록 하나)으로 다룬 것이라고 봅니다. upstream PR로는 이 둘을 구분해서 — #58578/#59740에 보완 관계임을 댓글로 남기고, 별도 PR로 제출할 계획입니다.
+PR #59740의 변경 파일 목록을 직접 확인했습니다. `qwen3_5_mtp.py`, `qwen3_eagle3.py`, `qwen3_dflash.py`, `qwen3_dspark.py`, `llama_eagle3.py`, `deepseek_eagle3.py`, `gemma4_dspark.py`, `qwen4_exp/{nvidia,amd}/mtp.py` 같은 신형 모델 파일만 건드리고, 저희가 오늘 밤 작업한 평범한 `eagle.py`, `exaone4_5_mtp.py`, `glm4_moe_mtp.py`, `deepseek_mtp.py` 같은 구형 범용 MTP/EAGLE 파일은 건드리지 않습니다. 그래서 저희 작업이 같은 걸 다시 만든 게 아니라, 그 PR이 다루지 않는 모델군을 더 단순한 방식(고정 빈도 목록 하나)으로 해결하고 있는 것입니다. upstream PR로는 이 둘을 구분해서 — #58578/#59740에 보완 관계임을 댓글로 남기고, 별도 PR로 제출할 계획입니다.
 
 ## 라이선스와 크레딧
 
-이 저장소의 모든 것은 Apache-2.0(`LICENSE`, `NOTICE`). 빈도 출처인 한국어 위키백과는 CC BY-SA 4.0이며 모든 파일 머리에 표기합니다. 방법은 FR-Spec(ACL 2025)과 MiaAI-Lab의 DGX Spark 키트를 따릅니다. vLLM 이슈 #58578(akapug)과 PR #59740(stecasta, "Context Aware Sparse LM Head")가 드래프터 어휘 축소라는 아이디어를 저희보다 먼저 제안·구현했고, 저희 작업은 그 PR이 다루지 않는 모델군을 다루는 보완적인 것입니다. 공개 파일에 고객 문서나 비공개 코퍼스는 쓰지 않습니다.
+이 저장소의 모든 것은 Apache-2.0(`LICENSE`, `NOTICE`). 빈도 출처인 한국어 위키백과는 CC BY-SA 4.0이며 모든 파일 머리에 표기합니다. 방법은 FR-Spec(ACL 2025)과 MiaAI-Lab의 DGX Spark 키트를 따릅니다. vLLM 이슈 #58578(akapug)과 PR #59740(stecasta, "Context Aware Sparse LM Head")가 드래프터 어휘 축소라는 아이디어를 저희보다 먼저 제안·구현했고, 저희 작업은 그 PR이 다루지 않는 모델군을 다루고 있습니다. 공개 파일에 고객 문서나 비공개 코퍼스는 쓰지 않습니다.
 
 ---
 
@@ -187,9 +187,8 @@ Head", opened 2026-10-02, still open) addresses that issue directly, with a mate
 than ours — a static 32k list plus 16k rows picked per draft token by a rank-256 SVD scorer, not a single fixed
 frequency list. **Measured on the exact same model (Qwen3.8-Flash-Next-NVFP4) and hardware class (one DGX Spark) as
 ours, their numbers are +15.2% (BF16 rows) and +22.6% (NVFP4 rows) — notably different from MiaAI's +54% that our own
-Qwen3.8 result rests on.** We don't know why; prompt composition, concurrency, static-vs-dynamic row selection and
-baseline choice are all plausible candidates, none confirmed. We're not hiding that two numbers for "the same thing"
-disagree this much.
+Qwen3.8 result rests on.** We have not yet established why; prompt composition, concurrency, static-vs-dynamic row
+selection and baseline choice are all plausible candidates, none confirmed.
 
 We checked PR #59740's changed-file list directly: it touches newer model files (`qwen3_5_mtp.py`, `qwen3_eagle3.py`,
 `qwen3_dflash.py`, `qwen3_dspark.py`, `llama_eagle3.py`, `deepseek_eagle3.py`, `gemma4_dspark.py`,
@@ -203,5 +202,5 @@ and comment on #58578/#59740 to credit them and cross-link rather than let a sil
 Apache-2.0 for everything in this repository (see `LICENSE`, `NOTICE`). Korean Wikipedia is the frequency source,
 CC BY-SA 4.0, attributed in every file header. The method follows FR-Spec (ACL 2025) and MiaAI-Lab's DGX Spark kits.
 vLLM issue #58578 (akapug) and PR #59740 (stecasta, "Context Aware Sparse LM Head") proposed and built drafter
-vocabulary trimming before we did; our work is a complementary piece covering the model families that PR doesn't
-reach. No customer or private corpus is used in any published file.
+vocabulary trimming before we did; our work covers the model families that PR doesn't reach. No customer or private
+corpus is used in any published file.
