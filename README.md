@@ -24,6 +24,8 @@ MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # 비우면 기�
 
 ## 어떤 모델에 적용되는가
 
+**지금 바로 쓸 수 있는 건 Qwen3.8-Flash-Next(nvidia/Qwen3.8-Flash-Next-NVFP4) 하나뿐입니다.** 나머지는 범용 vLLM 패치를 직접 만들고 있는 중이니 기다려 주세요 — GLM 5.3 Flash 등 다른 자체 MTP 헤드 가족은 검증과 측정이 남았고, Llama 3.3 70B + EAGLE-3 같은 별도 드래프터 구조는 패치가 끝나야 합니다. 아래는 왜 그런지에 대한 전체 설명입니다.
+
 "추가 토큰을 누가 제안하는가"를 가르는 구조가 둘이고, 이 파일이 적용되는지 안 되는지를 가르는 것도 이 구조이지, 어느 회사가 만들었는지가 아닙니다.
 
 **자체 MTP 헤드가 있는 모델은 자기 안에서 추가 토큰을 제안합니다.** 이 드래프트 헤드의 출력 투영을 어휘 부분집합으로 제한할 수 있고, 이 파일이 하는 일과 MiaAI-Lab의 오버레이가 다른 일곱 언어에서 이미 하는 일이 바로 그것입니다. Qwen3.8-Flash-Next는 측정을 마치고 공개되어 있습니다. GLM 5.3 Flash, DeepSeek V4.1 Flash, EXAONE 4.x와 다른 Qwen3.8/Qwen3-Next 체크포인트도 MTP 헤드가 있어 같은 종류의 파일을 받을 것으로 예상하지만, 아직 확인된 사실은 아닙니다. MiaAI-Lab의 오버레이는 Qwen3.8의 mtp.py를 대상으로 만들어졌고, 다른 가족의 vLLM 코드에도 같은 방식으로 붙는지는 아직 열린 확인 과제이며 사실로 공개하는 가정이 아닙니다. 이 가족들의 파일은 아직 여기에 없고, 위의 모든 숫자와 마찬가지로 주장에는 자신의 측정이 따라야 합니다.
@@ -82,6 +84,11 @@ MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # empty = the shi
 Other engines and families are added as they are measured; see `results/README.md`.
 
 ## Which models this applies to
+
+**Qwen3.8-Flash-Next (`nvidia/Qwen3.8-Flash-Next-NVFP4`) is the only model that works today.** Everything else is
+waiting on a generic vLLM patch we're building — other built-in-MTP-head families (GLM 5.3 Flash, etc.) still need
+their own verification and measurement, separate-drafter stacks (Llama 3.3 70B + EAGLE-3) need the patch itself. The
+rest of this section explains why.
 
 Two different architectures answer "what drafts the extra tokens", and that is what decides whether a file like this
 one can even apply, not which company trained the model.

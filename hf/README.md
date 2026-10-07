@@ -39,6 +39,14 @@ Every file: one token id per line, ascending, nothing else — the family's ship
 pinned, the rest filled by Korean frequency. No header line: the serving kit's loader parses each line as a bare integer
 with no comment support, so provenance (corpus, licence, build date) is tracked in the table above instead.
 
+## Models supported today
+
+**Qwen3.8-Flash-Next** (`nvidia/Qwen3.8-Flash-Next-NVFP4`) is the only model this works with right now — that's the one
+file above. Everything else is still ahead: other built-in-MTP-head families (GLM 5.3 Flash, DeepSeek V4.1 Flash,
+EXAONE 4.x) are waiting on their own verification and measurement, and separate-drafter stacks (Llama 3.3 70B +
+EAGLE-3 and similar) are waiting on a generic vLLM patch we're building now. Please wait rather than assume either
+works — the full per-family status table is on the [GitHub repo](https://github.com/veneta-ai/mtp-draft-vocab-ko#which-models-this-applies-to).
+
 ## Use (vLLM, Qwen3.8-Flash-Next, MiaAI-Lab overlay)
 
 ```bash
