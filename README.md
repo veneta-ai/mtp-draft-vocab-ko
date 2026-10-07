@@ -22,6 +22,8 @@ MTP 헤드가 토큰 몇 개를 미리 제안하고 본 모델이 검증하는 �
 MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # 비우면 기본 en+code
 ```
 
+**엔진 지원: 지금은 vLLM만입니다.** 올라마·LM Studio·SGLang 지원은 개발 예정이며, 세 엔진 상황이 서로 다릅니다(2026-10-07 확인). llama.cpp(올라마·LM Studio가 쓰는 엔진)는 Qwen3.8-Flash-Next의 MTP 헤드 자체는 최근 지원이 들어갔지만(`--spec-type draft-mtp`), 저희가 쓰는 "어휘 축소" 기능이 있는지는 아직 확인하지 못했습니다 — 각 앱이 쓰는 llama.cpp 버전이 그 지원을 담고 있는지도 별도 확인이 필요합니다. SGLang은 `--speculative-token-map`이라는 비슷한 기능이 실제로 있지만 EAGLE-2 전용이라 MTP나 저희 모델에는 그대로 쓸 수 없고, 파일 형식도 다릅니다(`.pt` 텐서, 저희 파일은 순수 정수 목록). 둘 다 "하면 된다"가 아니라 "확인하고 만들어야" 하는 상태입니다.
+
 ## 어떤 모델에 적용되는가
 
 **지금 바로 쓸 수 있는 건 Qwen3.8-Flash-Next(nvidia/Qwen3.8-Flash-Next-NVFP4) 하나뿐입니다.** 나머지는 전부 같은 범용 vLLM 패치 하나를 직접 만들고 있는 중이니 기다려 주세요. 아래는 왜 그런지에 대한 전체 설명입니다 — 2026-10-07 재구성: 처음에는 "자체 MTP 헤드가 있으면 파일만 있으면 된다"와 "별도 드래프터는 엔진 패치가 필요하다"를 서로 다른 두 부류로 나눴는데, 틀렸습니다. 실제로는 거의 전부가 같은 부류입니다.
@@ -87,6 +89,14 @@ the build script and the measurements.
 ```bash
 MTP_DRAFT_VOCAB=files/draft_vocab_ko_qwen3.8_en_code_65k.txt   # empty = the shipped en+code default
 ```
+
+**Engine support: vLLM only, today.** Ollama, LM Studio and SGLang support is planned — the three are in different
+states (checked 2026-10-07). llama.cpp (what Ollama and LM Studio run on) recently gained support for loading
+Qwen3.8-Flash-Next's MTP head itself (`--spec-type draft-mtp`), but we haven't yet confirmed whether it has an
+equivalent vocabulary-restriction feature, and each app's own vendored llama.cpp version would need to carry that
+support before any of this is reachable there. SGLang has a real, similar-sounding feature
+(`--speculative-token-map`), but it's EAGLE-2-only — not MTP, not our model — and uses a different file format
+(a `.pt` tensor, not our plain integer list). Neither is "just works"; both need their own investigation and build.
 
 Other engines and families are added as they are measured; see `results/README.md`.
 
