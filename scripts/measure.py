@@ -89,7 +89,9 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--vocab", required=True, help='label for the table row, e.g. "shipped en+code" or "ko 65k"')
     ap.add_argument("--machine", default="DGX Spark (GB10)")
-    ap.add_argument("--engine", default="vLLM (MiaAI-Lab Single-DGX-Spark kit)")
+    # No default: the engine goes into every row and into published tables, and
+    # a wrong one is a false provenance claim rather than a missing field.
+    ap.add_argument("--engine", required=True, help='e.g. "vLLM (MiaAI-Lab Single-DGX-Spark kit)" or "vLLM 0.28.0.dev999 (PR #60387 branch @ 8674c1f9)"')
     ap.add_argument("--checkpoint", default="nvidia/Qwen3.8-Flash-Next-NVFP4")
     ap.add_argument("--k", type=int, default=3, help="MTP speculative tokens")
     ap.add_argument("--prompts", nargs="+", required=True)
